@@ -1,5 +1,16 @@
 # stuttgart-things/deploy-upgrade-rke
 
+## EXAMPLE INVENTORY
+
+```
+[initial_master_node]
+{{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[additional_master_nodes]
+{{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+{{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+```
+
+
 ```
 - hosts: all
   become: true
