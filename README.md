@@ -1,5 +1,14 @@
 # stuttgart-things/deploy-upgrade-rke
 
+## INSTALLATION
+
+```
+roles:
+- src: https://github.com/stuttgart-things/deploy-configure-rke.git
+  scm: git
+  version: rke2r2-1.26.0
+```
+
 ## EXAMPLE INVENTORY
 
 ```
