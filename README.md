@@ -10,6 +10,7 @@
 {{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ```
 
+## EXAMPLE PLAY
 
 ```
 - hosts: all
