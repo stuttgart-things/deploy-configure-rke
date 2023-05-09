@@ -9,13 +9,13 @@ roles:
   version: rke2r2-1.26.0
 collections: 
 - name: community.crypto 
-  version: 2.10.0 
-- name: community.general version: 
-  6.2.0 
+  version: 2.13.0 
+- name: community.general 
+  version: 6.6.0 
 - name: ansible.posix 
-  version: 1.5.1 
-- name: community.kubernetes 
-  version: 2.0.1
+  version: 1.5.2 
+- name: kubernetes.core
+  version: 2.4.0
 ```
 
 ## EXAMPLE INVENTORY
