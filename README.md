@@ -25,6 +25,7 @@ collections:
 [initial_master_node]
 {{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 [additional_master_nodes]
+# always define group - but for a singlenode cluster do not add ips/fqdns
 {{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 {{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ```
