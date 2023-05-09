@@ -7,6 +7,15 @@ roles:
 - src: https://github.com/stuttgart-things/deploy-configure-rke.git
   scm: git
   version: rke2r2-1.26.0
+collections: 
+- name: community.crypto 
+  version: 2.10.0 
+- name: community.general version: 
+  6.2.0 
+- name: ansible.posix 
+  version: 1.5.1 
+- name: community.kubernetes 
+  version: 2.0.1
 ```
 
 ## EXAMPLE INVENTORY
