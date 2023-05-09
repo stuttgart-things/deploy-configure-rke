@@ -1,0 +1,8 @@
+---
+{% if 'rke2_registry_configs' is defined %}{% for registry_config in rke2_registry_configs.values() %}
+configs:
+  {{ registry_config.name }}:
+    auth:
+      username: {{ registry_config.username }}
+      password: {{ registry_config.password }}
+{% endfor %}{% endif %}

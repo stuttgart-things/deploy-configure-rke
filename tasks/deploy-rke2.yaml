@@ -1,0 +1,56 @@
+---
+- name: Install required packages
+  ansible.builtin.include_role:
+    name: install-requirements 
+  vars:
+    os_packages: "{{ rke2_os_packages }}"
+ 
+- name: Download and install addons
+  ansible.builtin.include_tasks: install-addons.yaml
+
+- name: Install rke2-server service and the rke2 binary
+  ansible.builtin.shell: |
+    curl -sfL {{ rke_installscript_url }} | sh -
+  environment:
+    INSTALL_RKE2_VERSION: "{{ rke2_version }}"
+    INSTALL_RKE2_CHANNEL_URL: "{{ rke2_channel_url }}"
+    INSTALL_RKE2_CHANNEL: "{{ rke2_channel }}"
+    INSTALL_RKE2_METHOD: "{{ rke2_method }}"
+
+- name: Deploy inital master node
+  ansible.builtin.include_tasks: start-rke2.yaml
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Get generated rke2 token for all additional nodes
+  block:
+    
+    - name: Read rke2 token from inital master
+      ansible.builtin.shell: cat {{ rke2_path_to_generated_token }}
+      register: rke2_token
+      when: 
+
+    - name: Set rke2 token from inital master
+      ansible.builtin.set_fact:
+        rke2_shared_token: "{{ rke2_token.stdout }}"
+      run_once: true
+      delegate_to: initial_master_node
+
+  when: inventory_hostname in groups['initial_master_node'] and rke2_shared_token is not defined
+
+- name: Deploy additional master nodes
+  ansible.builtin.include_tasks: start-rke2.yaml
+  when: inventory_hostname in groups['additional_master_nodes']
+
+- name: Fetch kubeconfig local to ansible host
+  ansible.builtin.fetch:
+    src: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
+    dest: "{{ rke2_fetched_kubeconfig_path }}"
+    flat: yes
+    run_once: true
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Add alias for crictl to nodes
+  lineinfile:
+    path: ~/.bashrc
+    line: "alias crictl='sudo {{ rke2_bin_dir }}/crictl -r {{ rke2_containerd_sock }}'"
+  when: add_crictl_alias|bool

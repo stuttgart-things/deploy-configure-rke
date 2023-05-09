@@ -1,0 +1,17 @@
+---
+- name: Disable and stop rke2 server service
+  ansible.builtin.systemd:
+    name: "{{ rke2_server_service }}"
+    enabled: no
+    state: stopped
+  ignore_errors: true 
+
+- name: Uninstall rke2-server
+  ansible.builtin.shell: |
+    sh {{ rke2_uninstall_script }}
+
+- name: Remove config dir
+  ansible.builtin.file:
+    path: "{{ rke2_config_dir }}"
+    state: absent
+  tags: rke2_config

@@ -1,0 +1,14 @@
+---
+{% if inventory_hostname not in groups['initial_master_node'] %}
+{% for host in groups['initial_master_node'] %}
+server: https://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:{{ rke2_node_register_port }}
+{% endfor %}{% endif %}
+token: {{ rke2_shared_token }}
+cni: {{ rke2_cni }}
+{% if rke2_tls_sans is defined %}{% for tls_san in rke2_tls_sans.values() %}
+tls-san:
+  - {{ tls_san }}
+{% endfor %}{% endif %}
+{% if not enable_ingress_controller %}
+disable: rke2-ingress-nginx
+{% endif %}

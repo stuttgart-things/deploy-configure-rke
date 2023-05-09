@@ -1,0 +1,91 @@
+---
+rke_state: present
+rke_version: 2
+prepare_rancher_ha_nodes: true
+rke_install_docker: "{{ true if rke_version==1 else false }}"
+template_creation_setup: true
+
+# rke2
+rke_installscript_url: https://get.rke2.io
+update_packages: true
+rke2_os_packages: curl
+rke2_cni: canal
+rke2_type: server
+rke2_k8s_version: 1.23.6
+rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
+rke2_channel: stable
+rke2_channel_url: https://update.rke2.io/v1-release/channels
+rke2_method: tar
+enable_ingress_controller: true
+rke2_config_dir: /etc/rancher/rke2
+rke2_kubeconfig_name: rke2.yaml
+rke2_user_name: root
+rke2_task_can_possibly_fail: "{{ true if inventory_hostname in groups['additional_master_nodes'] else false }}" 
+rke2_user_group: root
+rke2_server_service: rke2-server.service
+rke2_node_register_port: 9345
+k8s_api_port: 6443
+rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
+rke2_fetched_kubeconfig_path: ./kubeconfig
+rke2_path_to_generated_token: /var/lib/rancher/rke2/server/node-token
+rke2_release_kind: rke2r2
+rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
+rke2_airgapped_installation: true
+rke2_airgapped_install_dir: /var/lib/rancher/rke2/agent/images/
+rke2_airgapped_archive: rke2-images.linux-amd64.tar.zst 
+add_crictl_alias: true
+rke2_bin_dir: /var/lib/rancher/rke2/bin/
+rke2_containerd_sock: /run/k3s/containerd/containerd.sock
+network_manager_config_dir: /etc/NetworkManager/conf.d
+
+operation: deploy
+rke_parameter: up
+rke_statefile_name: rancher-cluster.rkestate
+rke_cluster_config_name: rancher-cluster.yml
+path_to_kubeconfig: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
+path_to_rke_statefile: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
+path_to_rke_cluster_config: "{{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}"
+path_tls_crt: "{{ rancher_cluster_folder }}/tls.crt"
+path_tls_key: "{{ rancher_cluster_folder }}/tls.key"
+path_cacerts_pem: "{{ rancher_cluster_folder }}/cacerts.pem"
+
+path_to_rke_installer_binary: /usr/bin/rke
+path_to_kubectl_binary: /usr/bin/kubectl
+install_kubectl: true
+install_helm: false
+install_rke_installer: true
+
+kubectl_version: 1.14.0
+helm_version: 3.8.2
+rke_installer_version: 1.3.11
+rke_kubernetes_version: v1.23.6-rancher1-1
+
+kubectl_binary:
+  kubectl:
+    bin_name: "kubectl"
+    bin_version: "{{ kubectl_version }}"
+    source_url: "https://dl.k8s.io/v{{ kubectl_version }}/kubernetes-client-linux-amd64.tar.gz"
+    bin_to_copy: "kubernetes/client/bin/kubectl"
+    bin_dir: "{{ path_to_kubectl_binary }}"
+    to_remove: "kubernetes"
+    check_bin_version_before_installing: true 
+
+rke_installer_binary:
+  rke:
+    bin_name: "rke_linux-amd64"
+    bin_version: "{{ rke_installer_version }}"
+    source_url: "https://github.com/rancher/rke/releases/download/v{{ rke_installer_version }}/rke_linux-amd64"
+    bin_to_copy: "rke_linux-amd64"
+    bin_dir: "{{ path_to_rke_installer_binary }}"
+    to_remove: ""
+    check_bin_version_before_installing: true
+
+helm_binary:
+  helm:
+    bin_name: "helm"
+    bin_version: "{{ helm_version }}"
+    source_url: "https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz"
+    bin_to_copy: "linux-amd64/helm"
+    bin_dir: "/usr/local/bin/helm"
+    to_remove: "linux-amd64"
+    check_bin_version_before_installing: true   

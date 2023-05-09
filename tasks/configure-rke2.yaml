@@ -1,0 +1,52 @@
+---
+- name: Create config dir
+  ansible.builtin.file:
+    path: "{{ rke2_config_dir }}"
+    state: directory
+    owner: "{{ rke2_user_name }}"
+    group: "{{ rke2_user_group }}"
+    mode: 0755
+  tags: rke2_config
+
+- name: Create registry config
+  ansible.builtin.include_tasks: configure-registries.yaml
+  when: rke2_registry_configs is defined
+
+- name: Create rke2 config
+  ansible.builtin.template:
+    src: rke2-config.yaml.j2
+    dest: "{{ rke2_config_dir }}/config.yaml"
+  tags: rke2_config
+  when: rke2_shared_token is defined or rke2_tls_sans is defined or inventory_hostname not in groups['initial_master_node']
+
+- name: Configure NetworkManager
+  block:
+
+    - name: Create rke2 config
+      ansible.builtin.template:
+        src: rke2-canal.conf.j2
+        dest: "{{ network_manager_config_dir }}/rke2-canal.conf"
+      tags: rke2_config
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: NetworkManager
+      tags: rke2_config
+
+    - name: Disable service nm-cloud-setup
+      ansible.builtin.systemd:
+        name: nm-cloud-setup.service
+        enabled: no
+        state: stopped
+      when: ansible_facts.services["nm-cloud-setup.service"] is defined
+
+    - name: Disable nm-cloud-setup.timer unit
+      ansible.builtin.systemd:
+        name: nm-cloud-setup.timer
+        state: stopped
+        enabled: no
+      when: ansible_facts.services["nm-cloud-setup.service"] is defined
+
+  when: ansible_os_family == 'RedHat'

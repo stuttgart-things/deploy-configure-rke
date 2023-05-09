@@ -1,0 +1,56 @@
+---
+- name: Download and install addons
+  ansible.builtin.include_tasks: install-addons.yaml
+  
+- name: Create rancher cluster folder 
+  ansible.builtin.file:
+    path: "{{ rancher_cluster_folder }}"
+    state: directory
+    mode: '0755'
+  tags: setup
+
+- name: Download and install rke1-installer
+  ansible.builtin.include_role:
+    name: download-install-binary
+  loop: "{{ lookup('dict', rke_installer_binary, wantlist=True) }}"
+  when: install_rke_installer|bool and rke_version == 1
+
+- name: Create rancher cluster config
+  ansible.builtin.template:
+    src: "{{ rancher_cluster_template_path }}"
+    dest: "{{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}"
+    backup: yes
+    mode: u=rw,g=,o=
+  tags: config
+
+- name: Check if a cluster already exists
+  ansible.builtin.stat:
+    path: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
+  register: cluster_exists
+
+- name: Provision rke
+  ansible.builtin.shell: |
+    yes | {{ path_to_rke_installer_binary }} {{ rke_parameter }} --config ./{{ rke_cluster_config_name }}
+  args:
+    chdir: "{{ rancher_cluster_folder }}"
+  when: cluster_exists.stat.exists != true
+  register: rke_setup
+  ignore_errors: true
+
+- name: Retry Provisioning of rke
+  ansible.builtin.shell: |
+    yes | {{ path_to_rke_installer_binary }} remove --config ./{{ rke_cluster_config_name }}
+    yes | {{ path_to_rke_installer_binary }} up --config ./{{ rke_cluster_config_name }}
+  args:
+    chdir: "{{ rancher_cluster_folder }}"
+  when: cluster_exists.stat.exists != true and rke_setup.rc != 0
+
+- name: Output post installation message
+  ansible.builtin.debug:
+    msg: "rancher-ha-server {{ rancher_cluster_name }} was successfully installed w/: {{ rke_kubernetes_version  }}"
+  when: cluster_exists.stat.exists != true
+
+- name: Make rke artifacts usuable for automation w/out sudo permissions
+  ansible.builtin.shell: |
+    chmod -R 777 {{ project_folder }}
+  when: operation =="deploy"

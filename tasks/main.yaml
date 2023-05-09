@@ -1,0 +1,37 @@
+---
+- name: Prepare rancher nodes
+  ansible.builtin.include_role:
+    name: prepare-rancher-node
+  vars:
+    install_docker: "{{ rke_install_docker }}"
+    template_creation_setup: true
+  when: prepare_rancher_ha_nodes|bool
+
+- name: Download air-gapped container images
+  block:
+
+    - name: Create air-gapped image dir
+      ansible.builtin.file:
+        path: "{{ rke2_airgapped_install_dir }}"
+        state: directory
+        owner: "{{ rke2_user_name }}"
+        group: "{{ rke2_user_group }}"        
+
+    - name: Download air-gapped image archive
+      ansible.builtin.get_url:
+        url: "{{ rke2_airgapped_image_url }}"
+        dest: "{{ rke2_airgapped_install_dir }}/{{ rke2_airgapped_archive }}"
+
+  when: rke2_airgapped_installation|bool
+
+- name: Deploy rke{{ rke_version }}
+  ansible.builtin.include_tasks: "deploy-rke{{ rke_version }}.yaml"
+  when: operation == "deploy" and rke_state == "present"
+
+- name: Upgrade rke1
+  ansible.builtin.include_tasks: upgrade-rke1.yaml
+  when: operation == "upgrade" and rke_version == 1 and rke_state == "present"
+
+- name: Remove rke2
+  ansible.builtin.include_tasks: remove-rke2.yaml
+  when: rke_state == "absent" and rke_version == 2

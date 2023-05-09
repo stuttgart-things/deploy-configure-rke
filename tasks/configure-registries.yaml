@@ -1,0 +1,6 @@
+---
+- name: Add registry config
+  ansible.builtin.template:
+    src: rke2-registry-config.yaml.j2
+    dest: "{{ rke2_config_dir }}/registries.yaml"
+  tags: rke2_config

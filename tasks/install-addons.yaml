@@ -1,0 +1,12 @@
+---
+- name: Download and install kubectl
+  ansible.builtin.include_role:
+    name: download-install-binary
+  loop: "{{ lookup('dict', kubectl_binary, wantlist=True) }}"
+  when: install_kubectl|bool
+
+- name: Download and install helm
+  ansible.builtin.include_role:
+    name: download-install-binary
+  loop: "{{ lookup('dict', helm_binary, wantlist=True) }}"
+  when: install_helm|bool
