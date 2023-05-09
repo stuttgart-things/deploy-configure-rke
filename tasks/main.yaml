@@ -1,7 +1,7 @@
 ---
 - name: Prepare rancher nodes
   ansible.builtin.include_role:
-    name: prepare-rancher-node
+    name: configure-rke-node
   vars:
     install_docker: "{{ rke_install_docker }}"
     template_creation_setup: true
