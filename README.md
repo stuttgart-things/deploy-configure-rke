@@ -21,7 +21,8 @@
     rke2_k8s_version: 1.26.0
     rke2_release_kind: rke2r2 #rke2r1
     enable_ingress_controller: false
-    
+    cluster_setup: multinode
+
   roles:
     - role: deploy-configure-rke
 ```
