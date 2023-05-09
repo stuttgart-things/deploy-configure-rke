@@ -7,6 +7,7 @@ roles:
 - src: https://github.com/stuttgart-things/deploy-configure-rke.git
   scm: git
   version: rke2r2-1.26.0
+  
 collections: 
 - name: community.crypto 
   version: 2.13.0 
