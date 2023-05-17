@@ -51,8 +51,6 @@ EOF
  
 <details><summary>EXAMPLE PLAYBOOK</summary>
 
-## EXAMPLE 
-
 ```
 cat <<EOF > ./play.yaml
 - hosts: all
@@ -69,6 +67,13 @@ cat <<EOF > ./play.yaml
     - role: deploy-configure-rke
 EOF
   
+ansible-playbook -i rke2 play.yaml -vv
+```
+</details>
+
+<details><summary>EXAMPLE EXECUTION</summary>
+
+```
 ansible-playbook -i rke2 play.yaml -vv
 ```
 </details>
