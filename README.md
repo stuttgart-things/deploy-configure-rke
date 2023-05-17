@@ -1,6 +1,6 @@
 # stuttgart-things/deploy-upgrade-rke
 
-## INSTALLATION
+<details><summary>INSTALLATION</summary>
 
 ```
 cat <<EOF > ./requirements.yaml
@@ -28,8 +28,9 @@ EOF
 
 ansible-galaxy install -r ./requirememts.yaml -f
 ```
+</details>
 
-## EXAMPLE INVENTORY
+<details><summary>EXAMPLE INVENTORY</summary>
 
 ```
 cat <<EOF > ./rke2
@@ -46,8 +47,11 @@ cat <<EOF > ./rke2
 [additional_master_nodes]
 EOF
 ```
+</details>
+ 
+<details><summary>EXAMPLE PLAYBOOK</summary>
 
-## EXAMPLE PLAY
+## EXAMPLE 
 
 ```
 cat <<EOF > ./play.yaml
@@ -64,9 +68,10 @@ cat <<EOF > ./play.yaml
   roles:
     - role: deploy-configure-rke
 EOF
-
+  
 ansible-playbook -i rke2 play.yaml -vv
 ```
+</details>
 
 Author Information
 ------------------
