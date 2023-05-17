@@ -17,7 +17,7 @@
     src: rke2-config.yaml.j2
     dest: "{{ rke2_config_dir }}/config.yaml"
   tags: rke2_config
-  when: rke2_shared_token is defined or rke2_tls_sans is defined or inventory_hostname not in groups['initial_master_node']
+  when: rke2_shared_token is defined or rke2_tls_sans is defined or cluster_setup == 'singlenode'
 
 - name: Configure NetworkManager
   block:
