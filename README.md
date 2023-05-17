@@ -32,6 +32,7 @@ ansible-galaxy install -r ./requirememts.yaml -f
 ## EXAMPLE INVENTORY
 
 ```
+cat <<EOF > ./rke2
 # MULTINODE-CLUSTER
 [initial_master_node]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
@@ -40,15 +41,16 @@ ansible-galaxy install -r ./requirememts.yaml -f
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 # SINGLENODE-CLUSTER
-# MULTINODE-CLUSTER
 [initial_master_node]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 [additional_master_nodes]
+EOF
 ```
 
 ## EXAMPLE PLAY
 
 ```
+cat <<EOF > ./play.yaml
 - hosts: all
   become: true
 
@@ -61,6 +63,28 @@ ansible-galaxy install -r ./requirememts.yaml -f
 
   roles:
     - role: deploy-configure-rke
+EOF
+
+ansible-playbook -i rke2 play.yaml -vv
 ```
 
+Author Information
+------------------
+Patrick Hermann, stuttgart-things 05/2023
+
+## License
+
+Copyright 2023 patrick hermann.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
