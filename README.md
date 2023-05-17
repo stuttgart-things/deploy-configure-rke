@@ -3,6 +3,7 @@
 ## INSTALLATION
 
 ```
+cat <<EOF > ./requirements.yaml
 roles:
 - src: https://github.com/stuttgart-things/deploy-configure-rke.git
   scm: git
@@ -23,16 +24,26 @@ collections:
   version: 1.5.2 
 - name: kubernetes.core
   version: 2.4.0
+EOF
+
+ansible-galaxy install -r ./requirememts.yaml -f
 ```
 
 ## EXAMPLE INVENTORY
 
 ```
+# MULTINODE-CLUSTER
 [initial_master_node]
-{{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-[additional_master_nodes] # always define the group - but for singlenode option do not add ips/fqdns
-{{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-{{ .ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+{{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[additional_master_nodes] 
+{{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+{{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+# SINGLENODE-CLUSTER
+# MULTINODE-CLUSTER
+[initial_master_node]
+{{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[additional_master_nodes]
 ```
 
 ## EXAMPLE PLAY
