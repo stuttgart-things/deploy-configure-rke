@@ -104,7 +104,7 @@ k3s_release_kind: k3s1
 k3s_version: "v{{ k3s_k8s_version }}+{{ k3s_release_kind }}"
 k3s_path_to_generated_token: /var/lib/rancher/k3s/server/node-token
 k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
-k3s_additional_nodes: "{{ groups.additional_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
+k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
 k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh
 k3s_agent_uninstall_script: /usr/local/bin/k3s-agent-uninstall.sh
 
