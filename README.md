@@ -7,7 +7,7 @@ cat <<EOF > ./requirements.yaml
 roles:
 - src: https://github.com/stuttgart-things/deploy-configure-rke.git
   scm: git
-  version: rke2r2-1.26.0
+  version: rke2r2-1.26.3-containerd
 - src: https://github.com/stuttgart-things/configure-rke-node.git
   scm: git
   version: rke2r2-1.26.0
