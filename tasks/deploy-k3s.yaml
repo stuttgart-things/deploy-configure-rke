@@ -28,7 +28,7 @@
     K3S_URL: "https://{{ k3s_master_ip[0] }}:6443"
     K3S_TOKEN: "{{ k3s_shared_token }}"
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
-  when: inventory_hostname in groups['additional_nodes']
+  when: inventory_hostname in groups['additional_master_nodes']
 
 - name: Label worker nodes
   ansible.builtin.shell: |
