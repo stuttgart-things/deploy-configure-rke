@@ -69,7 +69,7 @@ cat <<EOF > ./play.yaml
     - role: deploy-configure-rke
 EOF
   
-ansible-playbook -i rke2 play.yaml -vv
+ansible-playbook -i rke2 #k3s play.yaml -vv
 ```
 </details>
 
