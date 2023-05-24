@@ -10,6 +10,7 @@ rke_installscript_url: https://get.rke2.io
 update_packages: true
 rke2_os_packages: curl
 rke2_cni: canal
+kubeconfig_mode_644: true
 rke2_type: server
 rke2_k8s_version: 1.23.6
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"

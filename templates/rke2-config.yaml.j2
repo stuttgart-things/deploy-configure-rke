@@ -2,6 +2,9 @@
 {% if install_containerd %}
 container-runtime-endpoint: {{ container_runtime_endpoint }}
 {% endif %}
+{% if kubeconfig_mode_644 %}
+write-kubeconfig-mode: 644
+{% endif %}
 {% if inventory_hostname not in groups['initial_master_node'] %}
 {% for host in groups['initial_master_node'] %}
 server: https://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:{{ rke2_node_register_port }}
