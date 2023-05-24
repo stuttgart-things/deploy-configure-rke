@@ -7,6 +7,10 @@
     template_creation_setup: true
   when: prepare_rancher_ha_nodes|bool
 
+- name: Install containerd
+  ansible.builtin.include_tasks: install-containerd.yaml
+  when: install_containerd|bool
+
 - name: Download air-gapped container images
   block:
 
@@ -15,7 +19,7 @@
         path: "{{ rke2_airgapped_install_dir }}"
         state: directory
         owner: "{{ rke2_user_name }}"
-        group: "{{ rke2_user_group }}"        
+        group: "{{ rke2_user_group }}"
 
     - name: Download air-gapped image archive
       ansible.builtin.get_url:

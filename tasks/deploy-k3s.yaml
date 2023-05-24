@@ -1,0 +1,38 @@
+---
+- name: Set k3s parameters
+  set_fact:
+    k3s_params: "{{ k3s_parameters | join(' ') }}"
+
+- name: Install k3s-server service and the k3s binary
+  ansible.builtin.shell: |
+    curl -sfL {{ k3s_installscript_url }} | sh -s - {{ k3s_params }}
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Read k3s token from inital master
+  ansible.builtin.shell: cat {{ k3s_path_to_generated_token }}
+  register: k3s_token
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Set k3s token from inital master
+  ansible.builtin.set_fact:
+    k3s_shared_token: "{{ k3s_token.stdout }}"
+  run_once: true
+  delegate_to: initial_master_node
+
+- name: Deploy additional nodes
+  ansible.builtin.shell: |
+    curl -sfL {{ k3s_installscript_url }} | sh -s -
+  environment:
+    K3S_URL: "https://{{ k3s_master_ip[0] }}:6443"
+    K3S_TOKEN: "{{ k3s_shared_token }}"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  when: inventory_hostname in groups['additional_nodes']
+
+- name: Label worker nodes
+  ansible.builtin.shell: |
+    /usr/local/bin/kubectl label node {{ item }} node-role.kubernetes.io/worker=worker --overwrite
+  with_items:
+    - "{{ k3s_additional_nodes }}"
+  when: inventory_hostname in groups['initial_master_node']

@@ -1,0 +1,51 @@
+---
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ containerd_directories }}"
+
+- name: Download and unarchive containerd binaries
+  ansible.builtin.unarchive:
+    src: "{{ item.value.url }}"
+    dest: "{{ item.value.dest }}"
+    remote_src: yes
+  loop: "{{ lookup('dict', containerd_archives, wantlist=True) }}"
+
+- name: Download additional containerd files
+  ansible.builtin.get_url:
+    url: "{{ item.value.url  }}"
+    dest: "{{ item.value.dest }}"
+  loop: "{{ lookup('dict', containerd_downloads, wantlist=True) }}"
+
+- name: Create containerd default config & install runc
+  ansible.builtin.shell: |
+    containerd config default | tee {{ containerd_config_folder }}/{{ containerd_config_file }}
+    install -m 755 {{ runc_bin_dest }}/runc.amd64 {{ runc_bin_dest }}/runc
+
+- name: Set containerd root/data path in "{{ containerd_config_folder }}/{{ containerd_config_file }}"
+  ansible.builtin.lineinfile:
+    path: "{{ containerd_config_folder }}/{{ containerd_config_file }}"
+    regexp: "{{ regexRootPath }}"
+    line: "{{ lineRootPath }}"
+
+- name: Replace config values in {{ containerd_config_folder }}/{{ containerd_config_file }}
+  ansible.builtin.replace:
+    path: "{{ containerd_config_folder }}/{{ containerd_config_file }}"
+    regexp: "{{ item.value.regex  }}"
+    replace: "{{ item.value.replace  }}"
+  loop: "{{ lookup('dict', containerd_config_replacements, wantlist=True) }}"
+
+- name: Enable and restart containerd service
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: true
+    enabled: true
+    name: containerd
+
+- name: Create rke2 {{ rke2_config_dir }}/{{ rke2_config_file }} for the use of containerd
+  ansible.builtin.copy:
+    dest: "{{ rke2_config_dir }}/{{ rke2_config_file }}"
+    content: |
+      container-runtime-endpoint: {{ container_runtime_endpoint }}

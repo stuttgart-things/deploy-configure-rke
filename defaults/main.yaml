@@ -21,7 +21,7 @@ enable_ingress_controller: true
 rke2_config_dir: /etc/rancher/rke2
 rke2_kubeconfig_name: rke2.yaml
 rke2_user_name: root
-rke2_task_can_possibly_fail: "{{ true if inventory_hostname in groups['additional_master_nodes'] else false }}" 
+rke2_task_can_possibly_fail: "{{ true if inventory_hostname in groups['additional_master_nodes'] else false }}"
 rke2_user_group: root
 rke2_server_service: rke2-server.service
 rke2_node_register_port: 9345
@@ -34,7 +34,7 @@ rke2_release_kind: rke2r2
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: true
 rke2_airgapped_install_dir: /var/lib/rancher/rke2/agent/images/
-rke2_airgapped_archive: rke2-images.linux-amd64.tar.zst 
+rke2_airgapped_archive: rke2-images.linux-amd64.tar.zst
 add_crictl_alias: true
 rke2_bin_dir: /var/lib/rancher/rke2/bin/
 rke2_containerd_sock: /run/k3s/containerd/containerd.sock
@@ -70,7 +70,7 @@ kubectl_binary:
     bin_to_copy: "kubernetes/client/bin/kubectl"
     bin_dir: "{{ path_to_kubectl_binary }}"
     to_remove: "kubernetes"
-    check_bin_version_before_installing: true 
+    check_bin_version_before_installing: true
 
 rke_installer_binary:
   rke:
@@ -90,4 +90,63 @@ helm_binary:
     bin_to_copy: "linux-amd64/helm"
     bin_dir: "/usr/local/bin/helm"
     to_remove: "linux-amd64"
-    check_bin_version_before_installing: true   
+    check_bin_version_before_installing: true
+
+# k3s
+k3s_parameters:
+  - "--write-kubeconfig-mode 644"
+
+# conatinerd
+install_containerd: false
+containerd_version: 1.7.1
+runc_version: 1.1.7
+cni_version: 1.3.0
+containerd_install_url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{containerd_version }}-linux-amd64.tar.gz"
+containerd_install_dest: /usr/local
+containerd_service_url: https://raw.githubusercontent.com/containerd/containerd/v{{ containerd_version }}/containerd.service
+containerd_service_dest: /usr/lib/systemd/system/
+containerd_config_folder: /etc/containerd
+containerd_config_file: config.toml
+runc_install_url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64"
+runc_bin_dest: /usr/local/sbin/
+cni_install_url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz"
+cni_install_dest: /opt/cni/bin
+rke2_config_dir: /etc/rancher/rke2
+rke2_config_file: config.yaml
+regexBinDir: '^(\s*)bin_dir =.*'
+replaceBinDir: '\1bin_dir = "/var/lib/rancher/rke2/bin/"'
+regexConfDir: '^(\s*)conf_dir =.*'
+replaceConfDir: '\1conf_dir = "/etc/cni/net.d"'
+regexRootPath: '^root ='
+lineRootPath: 'root = "{{ containerdRootPath }}"'
+containerdRootPath: /var/lib/containerd/
+container_runtime_endpoint: unix:///run/containerd/containerd.sock
+containerd_config_replacements:
+  bin:
+    regex: "{{ regexBinDir }}"
+    replace: "{{ replaceBinDir }}"
+  cni:
+    regex: "{{ regexConfDir }}"
+    replace: "{{ replaceConfDir }}"
+
+containerd_directories:
+  - "{{ containerd_config_folder }}"
+  - "{{ cni_install_dest }}"
+  - "{{ rke2_config_dir }}"
+  - "{{ containerdRootPath }}"
+
+containerd_archives:
+  cni:
+    url: "{{ cni_install_url }}"
+    dest: "{{ cni_install_dest }}"
+  containerd:
+    url: "{{ containerd_install_url }}"
+    dest: "{{ containerd_install_dest }}"
+
+containerd_downloads:
+  containerd_service:
+    url: "{{ containerd_service_url }}"
+    dest: "{{ containerd_service_dest }}"
+  runc_binary:
+    url: "{{ runc_install_url }}"
+    dest: "{{ runc_bin_dest }}"
