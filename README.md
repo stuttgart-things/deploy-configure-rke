@@ -33,7 +33,7 @@ ansible-galaxy install -r ./requirements.yaml -f
 <details><summary>EXAMPLE INVENTORY</summary>
 
 ```
-cat <<EOF > ./rke2
+cat <<EOF > ./rke2 # or k3s
 # MULTINODE-CLUSTER
 [initial_master_node]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
@@ -49,7 +49,7 @@ EOF
 ```
 </details>
  
-<details><summary>EXAMPLE PLAYBOOK</summary>
+<details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
 
 ```
 cat <<EOF > ./play.yaml
@@ -69,7 +69,33 @@ cat <<EOF > ./play.yaml
     - role: deploy-configure-rke
 EOF
   
-ansible-playbook -i rke2 play.yaml -vv
+ansible-playbook -i rke2 #k3s play.yaml -vv
+```
+</details>
+
+<details><summary>EXAMPLE K3S PLAYBOOK</summary>
+
+```
+cat <<EOF > ./play.yaml
+- hosts: all
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: present
+    k3s_k8s_version: 1.21.1
+    k3s_release_kind: k3s1
+    k3s_parameters:
+      - "--write-kubeconfig-mode 644"  
+    cluster_setup: multinode
+    install_containerd: false # bring your own containerd
+    containerdRootPath: /var/lib/containerd/ # only if install_containerd true
+  
+  roles:
+    - role: deploy-configure-rke
+EOF
+  
+ansible-playbook -i k3s play.yaml -vv
 ```
 </details>
 
@@ -83,11 +109,12 @@ ansible-playbook -i rke2 play.yaml -vv
 Author Information
 ------------------
 Patrick Hermann, stuttgart-things 05/2023
+Christian Mueller, stuttgart-things 05/2023
 
 ## License
 <details><summary>LICENSE</summary>
 
-Copyright 2023 patrick hermann.
+Copyright 2020 patrick hermann.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
