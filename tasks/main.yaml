@@ -26,16 +26,24 @@
         url: "{{ rke2_airgapped_image_url }}"
         dest: "{{ rke2_airgapped_install_dir }}/{{ rke2_airgapped_archive }}"
 
-  when: rke2_airgapped_installation|bool
+  when: rke2_airgapped_installation|bool and not install_k3s
 
 - name: Deploy rke{{ rke_version }}
   ansible.builtin.include_tasks: "deploy-rke{{ rke_version }}.yaml"
-  when: operation == "deploy" and rke_state == "present"
+  when: operation == "deploy" and rke_state == "present" and not install_k3s
+
+- name: Deploy k3s
+  ansible.builtin.include_tasks: deploy-k3s.yaml
+  when: install_k3s|bool and k3s_state == "present"
 
 - name: Upgrade rke1
   ansible.builtin.include_tasks: upgrade-rke1.yaml
-  when: operation == "upgrade" and rke_version == 1 and rke_state == "present"
+  when: operation == "upgrade" and rke_version == 1 and rke_state == "present" and not install_k3s
 
 - name: Remove rke2
   ansible.builtin.include_tasks: remove-rke2.yaml
-  when: rke_state == "absent" and rke_version == 2
+  when: rke_state == "absent" and rke_version == 2 and not install_k3s
+
+- name: Remove k3s
+  ansible.builtin.include_tasks: remove-k3s.yaml
+  when: install_k3s|bool and k3s_state == "absent"

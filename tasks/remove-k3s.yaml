@@ -1,0 +1,10 @@
+---
+- name: Uninstall k3s-server
+  ansible.builtin.shell: |
+    sh {{ k3s_uninstall_script }}
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Uninstall k3s-agents
+  ansible.builtin.shell: |
+    sh {{ k3s_agent_uninstall_script }}
+  when: inventory_hostname in groups['additional_nodes']
