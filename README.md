@@ -49,7 +49,7 @@ EOF
 ```
 </details>
  
-<details><summary>EXAMPLE PLAYBOOK</summary>
+<details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
 
 ```
 cat <<EOF > ./play.yaml
@@ -70,6 +70,32 @@ cat <<EOF > ./play.yaml
 EOF
   
 ansible-playbook -i rke2 play.yaml -vv
+```
+</details>
+
+<details><summary>EXAMPLE K3S PLAYBOOK</summary>
+
+```
+cat <<EOF > ./play.yaml
+- hosts: all
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: present
+    k3s_k8s_version: 1.21.1
+    k3s_release_kind: k3s1
+    k3s_parameters:
+      - "--write-kubeconfig-mode 644"  
+    cluster_setup: multinode
+    install_containerd: false # bring your own containerd
+    containerdRootPath: /var/lib/containerd/ # only if install_containerd true
+  
+  roles:
+    - role: deploy-configure-rke
+EOF
+  
+ansible-playbook -i k3s play.yaml -vv
 ```
 </details>
 
