@@ -1,6 +1,6 @@
 ---
 - name: Set k3s parameters
-  set_fact:
+  ansible.builtin.set_fact:
     k3s_params: "{{ k3s_parameters | join(' ') }}"
 
 - name: Install k3s-server service and the k3s binary
