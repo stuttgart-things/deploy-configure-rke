@@ -33,7 +33,7 @@ ansible-galaxy install -r ./requirements.yaml -f
 <details><summary>EXAMPLE INVENTORY</summary>
 
 ```
-cat <<EOF > ./rke2
+cat <<EOF > ./rke2 # or k3s
 # MULTINODE-CLUSTER
 [initial_master_node]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
