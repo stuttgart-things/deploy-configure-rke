@@ -5,7 +5,6 @@ prepare_rancher_ha_nodes: true
 rke_install_docker: "{{ true if rke_version==1 else false }}"
 template_creation_setup: true
 cluster_setup: multinode
-install_k3s: false
 # rke2
 rke_installscript_url: https://get.rke2.io
 update_packages: true
@@ -93,8 +92,21 @@ helm_binary:
     check_bin_version_before_installing: true
 
 # k3s
+install_k3s: false
 k3s_parameters:
   - "--write-kubeconfig-mode 644"
+
+k3s_state: absent
+k3s_installscript_url: https://get.k3s.io
+k3s_k8s_version: 1.24.13
+k3s_release_kind: k3s1
+k3s_version: "v{{ k3s_k8s_version }}+{{ k3s_release_kind }}"
+k3s_path_to_generated_token: /var/lib/rancher/k3s/server/node-token
+k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
+k3s_additional_nodes: "{{ groups.additional_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
+k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh
+k3s_agent_uninstall_script: /usr/local/bin/k3s-agent-uninstall.sh
+
 
 # conatinerd
 install_containerd: false
