@@ -7,6 +7,13 @@
     group: "{{ rke2_user_group }}"
     mode: 0755
   tags: rke2_config
+  
+- name: Add proxy details in rke2-server service
+  ansible.builtin.copy:
+    dest: "{{ rke2_server_service_dir }}/{{ rke2_server_service_env_config }}"
+    content: |
+      {{ rke2_proxy_config }}
+  when: rke2_configure_proxy|bool
 
 - name: Create registry config
   ansible.builtin.include_tasks: configure-registries.yaml
