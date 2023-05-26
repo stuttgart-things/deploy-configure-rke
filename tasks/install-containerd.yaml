@@ -37,6 +37,14 @@
     replace: "{{ item.value.replace  }}"
   loop: "{{ lookup('dict', containerd_config_replacements, wantlist=True) }}"
 
+- name: Add proxy details in containerd service
+  ansible.builtin.blockinfile:
+    path: "{{ containerd_service_dest }}/{{ containerd_service_name }}"
+    insertafter: "KillMode=process"
+    block: |
+      {{ containerd_proxy_config }} 
+  when: rke2_configure_proxy|bool
+  
 - name: Enable and restart containerd service
   ansible.builtin.systemd:
     state: started
