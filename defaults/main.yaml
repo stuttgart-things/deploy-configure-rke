@@ -39,6 +39,9 @@ add_crictl_alias: true
 rke2_bin_dir: /var/lib/rancher/rke2/bin/
 rke2_containerd_sock: /run/k3s/containerd/containerd.sock
 network_manager_config_dir: /etc/NetworkManager/conf.d
+rke2_server_service_dir: /usr/local/lib/systemd/system
+rke2_server_service_env_config: rke2-server.env
+rke2_configure_proxy: false
 
 operation: deploy
 rke_parameter: up
@@ -118,6 +121,7 @@ containerd_install_url: "https://github.com/containerd/containerd/releases/downl
 containerd_install_dest: /usr/local
 containerd_service_url: https://raw.githubusercontent.com/containerd/containerd/v{{ containerd_version }}/containerd.service
 containerd_service_dest: /usr/lib/systemd/system/
+containerd_service_name: containerd.service
 containerd_config_folder: /etc/containerd
 containerd_config_file: config.toml
 runc_install_url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64"
@@ -163,3 +167,10 @@ containerd_downloads:
   runc_binary:
     url: "{{ runc_install_url }}"
     dest: "{{ runc_bin_dest }}"
+
+rke2_proxy_config: |
+  HOME=/root
+  # export HTTP_PROXY="http://127.0.0.1:3128"
+
+containerd_proxy_config: |
+  # Environment="HTTP_PROXY=http://127.0.0.1:3128/"
