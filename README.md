@@ -1,6 +1,6 @@
 # stuttgart-things/deploy-upgrade-rke
 
-<details><summary>INSTALLATION</summary>
+<details><summary>INSTALL REQUIREMENTS</summary>
 
 ```
 cat <<EOF > ./requirements.yaml
