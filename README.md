@@ -72,6 +72,26 @@ EOF
 ansible-playbook -i rke2 #k3s play.yaml -vv
 ```
 </details>
+- hosts: all
+  become: true
+  vars:
+    install_containerd: true
+    containerdRootPath: /net/rngvm00556/fs0
+    rke_version: 2
+    rke2_k8s_version: 1.26.0
+    rke2_release_kind: rke2r2 #rke2r1
+    enable_ingress_controller: false
+    cluster_setup: singlenode
+    rke2_airgapped_installation: false
+    rke2_configure_proxy: true
+    rke2_proxy_config: |
+      HOME=/root
+      export HTTP_PROXY="http://127.0.0.1:3128"
+    containerd_proxy_config: |
+      Environment="HTTP_PROXY=http://127.0.0.1:3128/"
+      Environment="HTTPS_PROXY=http://127.0.0.1:3128/"
+  roles:
+    - role: deploy-configure-rke
 
 <details><summary>EXAMPLE K3S PLAYBOOK</summary>
 
