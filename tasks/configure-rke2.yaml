@@ -13,6 +13,7 @@
     dest: "{{ rke2_server_service_dir }}/{{ rke2_server_service_env_config }}"
     content: |
       {{ rke2_proxy_config }}
+    force: false
   when: rke2_configure_proxy|bool
 
 - name: Create registry config
