@@ -58,23 +58,21 @@
     content: |
       container-runtime-endpoint: {{ container_runtime_endpoint }}
 
-- name: Download imagelist for rke2 release
-  ansible.builtin.get_url:
-    url: "{{ rke2_imagelist_url }}"
-    dest: "{{ rke2_config_dir }}/{{ rke2_imagelist }}"
+- name: Import rke2 images into conatinerd
+  block:
+  
+    - name: Download imagelist for rke2 release
+      ansible.builtin.get_url:
+        url: "{{ rke2_imagelist_url }}"
+        dest: "{{ rke2_config_dir }}/{{ rke2_imagelist }}"
 
-- name: Download image list
-  ansible.builtin.template:
-    src: 
-    dest: "{{ rke2_config_dir }}/containerd-importer.sh"
+    - name: Template importer script
+      ansible.builtin.template:
+        src: {{ containerd_importer_script }}
+        dest: "{{ rke2_config_dir }}/containerd-importer.sh"
 
-- name: Execute importer script
-  ansible.builtin.shell: |
-    sh {{ rke2_config_dir }}/containerd-importer.sh
-    
-    
-    
-    
-    
-
-    
+    - name: Download and import images into containerd
+      ansible.builtin.shell: |
+        sh {{ rke2_config_dir }}/containerd-importer.sh
+        
+  when: conatinerd_import_rke2images|bool
