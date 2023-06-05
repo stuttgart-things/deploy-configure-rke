@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILES="./rke2-images-all.linux-amd64.txt"
+FILES="./{{ rke2_imagelist }}"
 
 while read image; do
 
@@ -10,15 +10,15 @@ while read image; do
 
   echo pulling "$image"
 
-  sudo ctr image pull $image
+  sudo {{ containerd_cli }} image pull $image
 
   echo exporting "$image"
 
-  sudo ctr image export $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar $image
+  sudo {{ containerd_cli }} image export $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar $image
 
   echo importing "$image"
 
-  sudo ctr -n=k8s.io image import $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
+  sudo {{ containerd_cli }} -n=k8s.io image import $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
   
   echo removing tarfile "$image"
 
