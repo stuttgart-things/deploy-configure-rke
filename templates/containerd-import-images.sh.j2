@@ -8,19 +8,19 @@ while read image; do
   tag=$(echo $image| cut -d':' -f 2)
   imagename=$(echo $image| cut -d':' -f 1)
 
-  echo pulling "$image"
+  echo Pulling "$image"
 
   sudo {{ containerd_cli }} image pull $image
 
-  echo exporting "$image"
+  echo Exporting "$image"
 
   sudo {{ containerd_cli }} image export $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar $image
 
-  echo importing "$image"
+  echo Importing "$image"
 
   sudo {{ containerd_cli }} -n=k8s.io image import $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
   
-  echo removing tarfile "$image"
+  echo Removing tarfile "$image"
 
   sudo rm -rf $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
   
