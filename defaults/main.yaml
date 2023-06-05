@@ -12,6 +12,8 @@ rke2_os_packages: curl
 rke2_cni: canal
 kubeconfig_mode_644: true
 rke2_type: server
+rke2_imagelist: rke2-images-all.linux-amd64.txt
+rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
 rke2_k8s_version: 1.23.6
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
