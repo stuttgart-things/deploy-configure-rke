@@ -57,3 +57,24 @@
     dest: "{{ rke2_config_dir }}/{{ rke2_config_file }}"
     content: |
       container-runtime-endpoint: {{ container_runtime_endpoint }}
+
+- name: Download imagelist for rke2 release
+  ansible.builtin.get_url:
+    url: "{{ rke2_imagelist_url }}"
+    dest: "{{ rke2_config_dir }}/{{ rke2_imagelist }}"
+
+- name: Download image list
+  ansible.builtin.template:
+    src: 
+    dest: "{{ rke2_config_dir }}/containerd-importer.sh"
+
+- name: Execute importer script
+  ansible.builtin.shell: |
+    sh {{ rke2_config_dir }}/containerd-importer.sh
+    
+    
+    
+    
+    
+
+    
