@@ -25,3 +25,5 @@ while read image; do
   sudo rm -rf $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
   
 done <${FILES}
+
+sudo {{ containerd_cli }} --namespace k8s.io images ls
