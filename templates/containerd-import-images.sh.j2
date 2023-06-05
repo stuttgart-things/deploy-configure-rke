@@ -1,0 +1,23 @@
+#!/bin/bash
+
+FILES="./rke2-images-all.linux-amd64.txt"
+
+while read image; do
+
+  image=$(echo $image | cut -d'/' -f 3)
+  tag=$(echo $image| cut -d':' -f 2)
+  imagename=$(echo $image| cut -d':' -f 1)
+
+  echo pulling "$image"
+
+  sudo ctr image pull $image
+
+  echo exporting "$image"
+
+  sudo ctr image export $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar $image
+
+  echo importing "$image"
+
+  sudo ctr -n=k8s.io image import $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
+
+done <${FILES}
