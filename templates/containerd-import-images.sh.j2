@@ -19,5 +19,9 @@ while read image; do
   echo importing "$image"
 
   sudo ctr -n=k8s.io image import $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
+  
+  echo removing tarfile "$image"
 
+  sudo rm -rf $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
+  
 done <${FILES}
