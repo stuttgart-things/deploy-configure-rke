@@ -128,6 +128,7 @@ containerd_service_url: https://raw.githubusercontent.com/containerd/containerd/
 containerd_service_dest: /usr/lib/systemd/system/
 containerd_service_name: containerd.service
 containerd_config_folder: /etc/containerd
+containerd_importer_script: containerd-importer.sh
 containerd_config_file: config.toml
 runc_install_url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64"
 runc_bin_dest: /usr/local/sbin/
