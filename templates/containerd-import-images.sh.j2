@@ -2,25 +2,25 @@
 
 FILES="{{ rke2_config_dir }}/{{ rke2_imagelist }}"
 
-while read image; do
+while read i; do
 
-  image=$(echo $image | cut -d'/' -f 3)
-  tag=$(echo $image| cut -d':' -f 2)
+  image=$(echo $i | cut -d'/' -f 3)
+  tag=$(echo $i| cut -d':' -f 2)
   imagename=$(echo $image| cut -d':' -f 1)
 
-  echo Pulling "$image"
+  echo Pulling "$i"
 
   sudo {{ containerd_cli }} image pull $image
 
-  echo Exporting "$image"
+  echo Exporting "$i"
 
   sudo {{ containerd_cli }} image export $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar $image
 
-  echo Importing "$image"
+  echo Importing "$i"
 
   sudo {{ containerd_cli }} -n=k8s.io image import $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
   
-  echo Removing tarfile "$image"
+  echo Removing tarfile for "$i"
 
   sudo rm -rf $(echo $image | cut -d'/' -f 2)-$imagename-$tag.tar
   
