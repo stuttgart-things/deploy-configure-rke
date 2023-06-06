@@ -68,7 +68,7 @@
 
     - name: Template importer script
       ansible.builtin.template:
-        src: "{{ containerd_importer_script }}"
+        src: "{{ containerd_importer_script }}.j2"
         dest: "{{ rke2_config_dir }}/{{ containerd_importer_script }}"
 
     - name: Download and import images into containerd
