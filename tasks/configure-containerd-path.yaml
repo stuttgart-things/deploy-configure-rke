@@ -4,7 +4,7 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ containerd_path }}"
+    - "{{ containerd_paths }}"
 
 - name: Create symbolic links
   ansible.builtin.file:
