@@ -4,13 +4,7 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ KUBELET_DIR }}"
-    - "{{ CONTAINERD_ROOT_DIR_OLD }}"
-    - "{{ CONTAINERD_ROOT_DIR_NEW }}"
-    - "{{ CONTAINERD_STATE_DIR_OLD }}"
-    - "{{ CONTAINERD_STATE_DIR_NEW }}"
-    - "{{ PV_DIR_OLD }}"
-    - "{{ PV_DIR_NEW }}"
+    - "{{ containerd_path }}"
 
 - name: Create symbolic links
   ansible.builtin.file:
