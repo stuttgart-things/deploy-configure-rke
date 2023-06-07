@@ -1,0 +1,23 @@
+---
+- name: Create directories and permissions
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ KUBELET_DIR }}"
+    - "{{ CONTAINERD_ROOT_DIR_OLD }}"
+    - "{{ CONTAINERD_ROOT_DIR_NEW }}"
+    - "{{ CONTAINERD_STATE_DIR_OLD }}"
+    - "{{ CONTAINERD_STATE_DIR_NEW }}"
+    - "{{ PV_DIR_OLD }}"
+    - "{{ PV_DIR_NEW }}"
+
+- name: Create symbolic links
+  ansible.builtin.file:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    state: link
+  loop:
+    - { src: "{{ CONTAINERD_ROOT_DIR_NEW }}", dest: "{{ CONTAINERD_ROOT_DIR_OLD }}/containerd" }
+    - { src: "{{ CONTAINERD_STATE_DIR_NEW }}", dest: "{{ CONTAINERD_STATE_DIR_OLD }}/containerd" }
+    - { src: "{{ PV_DIR_NEW }}", dest: "{{ PV_DIR_OLD }}/storage" }
