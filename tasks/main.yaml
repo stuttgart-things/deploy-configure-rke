@@ -11,6 +11,10 @@
   ansible.builtin.include_tasks: install-containerd.yaml
   when: install_containerd|bool
 
+- name: Configure rke2 containerd paths
+  ansible.builtin.include_tasks: configure-rke2containerd-paths.yaml
+  when: configure_rke2containerd_paths|bool
+
 - name: Download air-gapped container images
   block:
 

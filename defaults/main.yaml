@@ -152,7 +152,7 @@ containerd_config_replacements:
     regex: "{{ regexConfDir }}"
     replace: "{{ replaceConfDir }}"
 
-containerd_directories:
+CUSTOM_CONTAINERD_DATA_DIRectories:
   - "{{ containerd_config_folder }}"
   - "{{ cni_install_dest }}"
   - "{{ rke2_config_dir }}"
@@ -182,19 +182,20 @@ containerd_proxy_config: |
   # Environment="HTTP_PROXY=http://127.0.0.1:3128/"
 
 # configure containerd path
-CONTAINERD_DIR: "/mnt"
-KUBELET_DIR: "{{ CONTAINERD_DIR }}/kubelet"
-CONTAINERD_ROOT_DIR_OLD: "/var/lib/rancher/rke2/agent"
-CONTAINERD_ROOT_DIR_NEW: "{{ CONTAINERD_DIR }}/containerd-root/containerd"
-CONTAINERD_STATE_DIR_OLD: "/run/k3s"
-CONTAINERD_STATE_DIR_NEW: "{{ CONTAINERD_DIR }}/containerd-state/containerd"
-PV_DIR_OLD: "/var/lib/rancher/rke2"
-PV_DIR_NEW: "{{ CONTAINERD_DIR }}/local-path-provisioner/storage"
+configure_rke2containerd_paths: false
+custom_containerd_data_dir: "/mnt"
+kubelet_dir: "{{ custom_containerd_data_dir }}/kubelet"
+containerd_root_dir_default: "/var/lib/rancher/rke2/agent"
+containerd_root_dir_custom: "{{ custom_containerd_data_dir }}/containerd-root/containerd"
+containerd_state_dir_default: "/run/k3s"
+containerd_state_dir_custom: "{{ custom_containerd_data_dir }}/containerd-state/containerd"
+pv_dir_default: "/var/lib/rancher/rke2"
+pv_dir_custom: "{{ custom_containerd_data_dir }}/local-path-provisioner/storage"
 containerd_paths:
-  - "{{ KUBELET_DIR }}"
-  - "{{ CONTAINERD_ROOT_DIR_OLD }}"
-  - "{{ CONTAINERD_ROOT_DIR_NEW }}"
-  - "{{ CONTAINERD_STATE_DIR_OLD }}"
-  - "{{ CONTAINERD_STATE_DIR_NEW }}"
-  - "{{ PV_DIR_OLD }}"
-  - "{{ PV_DIR_NEW }}"
+  - "{{ kubelet_dir }}"
+  - "{{ containerd_root_dir_default }}"
+  - "{{ containerd_root_dir_custom }}"
+  - "{{ containerd_state_dir_default }}"
+  - "{{ containerd_state_dir_custom }}"
+  - "{{ pv_dir_default }}"
+  - "{{ pv_dir_custom }}"

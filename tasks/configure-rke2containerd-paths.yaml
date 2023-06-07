@@ -1,0 +1,17 @@
+---
+- name: Create directories for custom containerd
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ containerd_paths }}"
+
+- name: Create symbolic links
+  ansible.builtin.file:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    state: link
+  loop:
+    - { src: "{{ containerd_root_dir_custom }}", dest: "{{ containerd_root_dir_default }}/containerd" }
+    - { src: "{{ containerd_state_dir_custom }}", dest: "{{ containerd_state_dir_default }}/containerd" }
+    - { src: "{{ pv_dir_custom }}", dest: "{{ pv_dir_default }}/storage" }
