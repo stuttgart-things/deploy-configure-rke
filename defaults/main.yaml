@@ -190,7 +190,7 @@ CONTAINERD_STATE_DIR_OLD: "/run/k3s"
 CONTAINERD_STATE_DIR_NEW: "{{ CONTAINERD_DIR }}/containerd-state/containerd"
 PV_DIR_OLD: "/var/lib/rancher/rke2"
 PV_DIR_NEW: "{{ CONTAINERD_DIR }}/local-path-provisioner/storage"
-containerd_path:
+containerd_paths:
   - "{{ KUBELET_DIR }}"
   - "{{ CONTAINERD_ROOT_DIR_OLD }}"
   - "{{ CONTAINERD_ROOT_DIR_NEW }}"
