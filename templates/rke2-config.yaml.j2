@@ -18,5 +18,5 @@ tls-san:
   - {{ tls_san }}
 {% endfor %}{% endif %}
 {% if not enable_ingress_controller %}
-disable: rke2-ingress-nginx
+disable: rke2-ingress-nginx # rke-snapshot-controller
 {% endif %}
