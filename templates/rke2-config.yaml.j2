@@ -17,6 +17,9 @@ cni: {{ rke2_cni }}
 tls-san:
   - {{ tls_san }}
 {% endfor %}{% endif %}
-{% if not enable_ingress_controller %}
-disable: rke2-ingress-nginx # rke-snapshot-controller
+{% if disable_rke_components is defined %}
+disable:
+{% for disablement in disable_rke_components %}
+  - {{ disablement }}
+{% endfor %}
 {% endif %}
