@@ -60,7 +60,9 @@ cat <<EOF > ./play.yaml
     rke_version: 2
     rke2_k8s_version: 1.26.0
     rke2_release_kind: rke2r2 # rke2r1
-    enable_ingress_controller: false
+    disable_rke_components: 
+      - rke2-ingress-nginx
+      - rke-snapshot-controller
     cluster_setup: multinode
     install_containerd: false # bring your own containerd
     containerdRootPath: /var/lib/containerd/ # directory must not exist
