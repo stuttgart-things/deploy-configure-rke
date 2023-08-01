@@ -60,7 +60,7 @@ cat <<EOF > ./play.yaml
     rke_version: 2
     rke2_k8s_version: 1.26.0
     rke2_release_kind: rke2r2 # rke2r1
-    disable_rke_components: 
+    disable_rke2_components: 
       - rke2-ingress-nginx
       - rke-snapshot-controller
     cluster_setup: multinode
