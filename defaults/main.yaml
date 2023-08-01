@@ -19,7 +19,8 @@ rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
 rke2_method: tar
-enable_ingress_controller: true
+disable_rke2_components: 
+  - rke2-ingress-nginx
 rke2_config_dir: /etc/rancher/rke2
 rke2_kubeconfig_name: rke2.yaml
 rke2_user_name: root
