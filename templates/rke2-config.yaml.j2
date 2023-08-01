@@ -17,9 +17,9 @@ cni: {{ rke2_cni }}
 tls-san:
   - {{ tls_san }}
 {% endfor %}{% endif %}
-{% if disable_rke_components is defined %}
+{% if disable_rke2_components is defined %}
 disable:
-{% for disablement in disable_rke_components %}
+{% for disablement in disable_rke2_components %}
   - {{ disablement }}
 {% endfor %}
 {% endif %}
