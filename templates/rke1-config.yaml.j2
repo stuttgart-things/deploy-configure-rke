@@ -1,0 +1,20 @@
+nodes:
+{% for host in groups['worker'] %}
+  - address: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+    internal_address: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+    user: {{ rancheruser }}
+    role: [controlplane,worker,etcd]
+    ssh_key_path: {{ path_to_private_key }}
+{% endfor %}
+
+cluster_name: {{ rancher_cluster_name }}
+kubernetes_version: {{ rke_kubernetes_version }}
+
+network:
+    plugin: {{ network_plugin }}
+
+services:
+  etcd:
+    snapshot: true
+    creation: 6h
+    retention: 24h
