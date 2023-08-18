@@ -42,7 +42,7 @@
     yes | {{ path_to_rke_installer_binary }} up --config ./{{ rke_cluster_config_name }}
   args:
     chdir: "{{ rancher_cluster_folder }}"
-  when: cluster_exists.stat.exists != true and rke_setup.rc != 0
+  when: rke_setup.rc != 0
   delegate_to: 127.0.0.1
 
 - name: Output post installation message
