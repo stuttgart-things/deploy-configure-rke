@@ -1,7 +1,6 @@
 ---
 - name: Download and install addons
   ansible.builtin.include_tasks: install-addons.yaml
-  delegate_to: 127.0.0.1
   
 - name: Create rancher cluster folder 
   ansible.builtin.file:
