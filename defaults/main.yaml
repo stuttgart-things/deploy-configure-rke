@@ -61,19 +61,20 @@ path_cacerts_pem: "{{ rancher_cluster_folder }}/cacerts.pem"
 path_to_rke_installer_binary: /usr/bin/rke
 path_to_kubectl_binary: /usr/bin/kubectl
 install_kubectl: true
-install_helm: false
+install_helm: true
 install_rke_installer: true
 
-kubectl_version: 1.14.0
-helm_version: 3.8.2
-rke_installer_version: 1.3.11
-rke_kubernetes_version: v1.23.6-rancher1-1
+kubectl_version: 1.28.0
+helm_version: 3.12.0
+rke_installer_version: 1.4.8
+rke_kubernetes_version: v1.26.7-rancher1-1
+rancher_cluster_folder: rancher-things
 
 kubectl_binary:
   kubectl:
     bin_name: "kubectl"
     bin_version: "{{ kubectl_version }}"
-    source_url: "https://dl.k8s.io/v{{ kubectl_version }}/kubernetes-client-linux-amd64.tar.gz"
+    source_url: "https://dl.k8s.io/release/v{{ kubectl_version }}/bin/linux/amd64/kubectl"
     bin_to_copy: "kubernetes/client/bin/kubectl"
     bin_dir: "{{ path_to_kubectl_binary }}"
     to_remove: "kubernetes"
