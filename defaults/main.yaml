@@ -80,7 +80,7 @@ kubectl_binary:
     bin_name: "kubectl"
     bin_version: "{{ kubectl_version }}"
     source_url: "https://dl.k8s.io/release/v{{ kubectl_version }}/bin/linux/amd64/kubectl"
-    bin_to_copy: "kubernetes/client/bin/kubectl"
+    bin_to_copy: "kubectl"
     bin_dir: "{{ path_to_kubectl_binary }}"
     to_remove: "kubernetes"
     check_bin_version_before_installing: true
