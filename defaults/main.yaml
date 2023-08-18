@@ -64,11 +64,16 @@ install_kubectl: true
 install_helm: true
 install_rke_installer: true
 
+rancher_cluster_name: rancher-things
+rancher_cluster_folder: "{{ rancher_cluster_name }}"
+network_plugin: canal
+ssh_key_path: ~/.ssh/id_rsa
+rke_user: sthings
+
 kubectl_version: 1.28.0
 helm_version: 3.12.0
 rke_installer_version: 1.4.8
 rke_kubernetes_version: v1.26.7-rancher1-1
-rancher_cluster_folder: rancher-things
 
 kubectl_binary:
   kubectl:
