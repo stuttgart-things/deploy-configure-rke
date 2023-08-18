@@ -13,9 +13,10 @@
 - name: Download and install rke1-installer
   ansible.builtin.include_role:
     name: download-install-binary
+    apply:
+      delegate_to: 127.0.0.1
   loop: "{{ lookup('dict', rke_installer_binary, wantlist=True) }}"
-  when: install_rke_installer|bool and rke_version == 1
-  delegate_to: 127.0.0.1
+  when: install_rke_installer|bool
 
 - name: Create rancher cluster config
   ansible.builtin.template:
