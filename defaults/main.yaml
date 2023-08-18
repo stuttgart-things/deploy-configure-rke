@@ -67,7 +67,7 @@ install_rke_installer: true
 rancher_cluster_name: rancher-things
 rancher_cluster_folder: "{{ rancher_cluster_name }}"
 network_plugin: canal
-ssh_key_path: ~/.ssh/id_rsa
+path_to_private_key: ~/.ssh/id_rsa
 rke_user: sthings
 
 kubectl_version: 1.28.0
