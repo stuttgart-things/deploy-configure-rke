@@ -1,5 +1,5 @@
 nodes:
-{% for host in groups['worker'] %}
+{% for host in groups['all'] %}
   - address: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
     internal_address: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
     user: {{ rke_user }}
