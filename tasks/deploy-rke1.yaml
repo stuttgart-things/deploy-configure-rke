@@ -27,18 +27,11 @@
   tags: config
   delegate_to: 127.0.0.1
 
-- name: Check if a cluster already exists
-  ansible.builtin.stat:
-    path: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
-  register: cluster_exists
-  delegate_to: 127.0.0.1
-
 - name: Provision rke
   ansible.builtin.shell: |
     yes | {{ path_to_rke_installer_binary }} {{ rke_parameter }} --config ./{{ rke_cluster_config_name }}
   args:
     chdir: "{{ rancher_cluster_folder }}"
-  when: cluster_exists.stat.exists != true
   register: rke_setup
   ignore_errors: true
   delegate_to: 127.0.0.1
@@ -56,10 +49,4 @@
   ansible.builtin.debug:
     msg: "rancher-ha-server {{ rancher_cluster_name }} was successfully installed w/: {{ rke_kubernetes_version  }}"
   when: cluster_exists.stat.exists != true
-  delegate_to: 127.0.0.1
-
-- name: Make rke artifacts usuable for automation w/out sudo permissions
-  ansible.builtin.shell: |
-    chmod -R 777 {{ project_folder }}
-  when: operation =="deploy"
   delegate_to: 127.0.0.1
