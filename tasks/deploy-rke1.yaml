@@ -18,6 +18,30 @@
   loop: "{{ lookup('dict', rke_installer_binary, wantlist=True) }}"
   when: install_rke_installer|bool
 
+- name: Check if rancher key-pair does already exist 
+  ansible.builtin.stat:
+    path: "{{ path_to_private_key }}"
+  register: keypair_exists 
+  tags: keysetup
+  delegate_to: 127.0.0.1
+
+- name: Generate rancher key-pair for creating/managing a rancher ha-server
+  community.crypto.openssh_keypair:
+    path: "{{ path_to_private_key }}"
+    type: rsa
+    size: 2048
+    force: no
+    unsafe_writes: no
+  when: keypair_exists.stat.exists == False
+  delegate_to: 127.0.0.1
+  tags: keysetup
+
+- name: Create rke user
+  ansible.builtin.include_role:
+    name: create-os-user
+  vars:
+    users: "{{ rke_user }}"
+
 - name: Create rancher cluster config
   ansible.builtin.template:
     src: rke1-config.yaml.j2
