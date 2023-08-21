@@ -27,6 +27,7 @@
     - name: Read rke2 token from inital master
       ansible.builtin.shell: cat {{ rke2_path_to_generated_token }}
       register: rke2_token
+      delegate_to: initial_master_node
 
     - name: Set rke2 token from inital master
       ansible.builtin.set_fact:
