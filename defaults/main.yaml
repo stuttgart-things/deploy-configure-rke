@@ -76,6 +76,17 @@ helm_version: 3.12.0
 rke_installer_version: 1.4.8
 rke_kubernetes_version: v1.26.7-rancher1-1
 
+rke_user:
+  - username: rke
+    name: rke user
+    groups: ['{{ admin_group }}', '{{ additional_group }}']
+    home: /home/rke
+    profile: |
+      alias ll='ls -ahl'
+    ssh_key:
+      - "{{ rke_pub_key }}"
+    enable_ssh_tcp_forwarding: True
+
 kubectl_binary:
   kubectl:
     bin_name: "kubectl"
