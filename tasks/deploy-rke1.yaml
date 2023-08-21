@@ -1,8 +1,6 @@
 ---
 - name: Download and install addons
   ansible.builtin.include_tasks: install-addons.yaml
-  delegate_to: initial_master_node
-  when: inventory_hostname in groups['initial_master_node']
   
 - name: Create rancher cluster config
   ansible.builtin.template:
@@ -37,8 +35,8 @@
     size: 2048
     force: no
     unsafe_writes: no
-  when: keypair_exists.stat.exists == False and inventory_hostname in groups['initial_master_node']
   delegate_to: initial_master_node
+  when: inventory_hostname in groups['initial_master_node']
   tags: keysetup
 
 - name: Read pub key 
