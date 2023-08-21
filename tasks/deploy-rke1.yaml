@@ -38,6 +38,22 @@
   when: inventory_hostname in groups['initial_master_node']
   tags: keysetup
 
+- name: Get generated rke2 token for all additional nodes
+  block:
+    
+    - name: Read rke2 token from inital master
+      ansible.builtin.shell: cat {{ rke2_path_to_generated_token }}
+      register: rke2_token
+      delegate_to: initial_master_node
+
+    - name: Set rke2 token from inital master
+      ansible.builtin.set_fact:
+        rke2_shared_token: "{{ rke2_token.stdout }}"
+      run_once: true
+      delegate_to: initial_master_node
+
+  when: inventory_hostname in groups['initial_master_node']
+
 - name: Create rke user
   ansible.builtin.include_role:
     name: create-os-user
