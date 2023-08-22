@@ -64,9 +64,7 @@
 
 - name: Provision rke
   ansible.builtin.shell: |
-    yes | {{ path_to_rke_installer_binary }} {{ rke_parameter }} --config ./{{ rke_cluster_config_name }}
-  args:
-    chdir: "{{ rancher_cluster_folder }}"
+    yes | {{ path_to_rke_installer_binary }} {{ rke_parameter }} --config {{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}
   register: rke_setup
   ignore_errors: true
   when: inventory_hostname in groups['initial_master_node']
