@@ -8,12 +8,13 @@
     state: directory
     mode: '0755'
   tags: setup
-  delegate_to: 127.0.0.1
-
+  delegate_to: initial_master_node
+  when: inventory_hostname in groups['initial_master_node']
+  
 - name: Create rancher cluster config
   ansible.builtin.template:
     src: rke1-config.yaml.j2
-    dest: "{{ rancher_cluster_folder }}/{{ rke1_cluster_config }}"
+    dest: "{{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}"
     backup: yes
     mode: u=rw,g=,o=
   tags: config
