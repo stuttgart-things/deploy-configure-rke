@@ -167,8 +167,10 @@ ansible-playbook -i rke2 play.yaml -vv
 
 Author Information
 ------------------
+```
 Patrick Hermann, stuttgart-things 05/2023
 Christian Mueller, stuttgart-things 05/2023
+```
 
 ## License
 <details><summary>LICENSE</summary>
