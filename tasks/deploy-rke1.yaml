@@ -64,7 +64,9 @@
 
 - name: Provision rke
   ansible.builtin.shell: |
-    yes | {{ path_to_rke_installer_binary }} {{ rke_parameter }} --config {{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}
+    yes | {{ path_to_rke_installer_binary }} {{ rke_parameter }} --config ./{{ rke_cluster_config_name }}
+  args:
+    chdir: "{{ rancher_cluster_folder }}"
   register: rke_setup
   ignore_errors: true
   when: inventory_hostname in groups['initial_master_node']
@@ -75,9 +77,11 @@
     yes | {{ path_to_rke_installer_binary }} up --config ./{{ rke_cluster_config_name }}
   args:
     chdir: "{{ rancher_cluster_folder }}"
-  when: inventory_hostname in groups['initial_master_node']
+  register: rke_setup
+  when: inventory_hostname in groups['initial_master_node'] and rke_setup.rc != 0
 
 - name: Output post installation message
   ansible.builtin.debug:
     msg: "rancher-ha-server {{ rancher_cluster_name }} was successfully installed w/: {{ rke_kubernetes_version  }}"
-  when: cluster_exists.stat.exists != true and inventory_hostname in groups['initial_master_node']
+  register: rke_setup
+  when: rke_setup.rc == 0 and inventory_hostname in groups['initial_master_node']
