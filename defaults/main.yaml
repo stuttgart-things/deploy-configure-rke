@@ -86,6 +86,7 @@ rke_user:
     ssh_key:
       - "{{ rke_pub_key }}"
     enable_ssh_tcp_forwarding: True
+additional_group: rke
 
 kubectl_binary:
   kubectl:
