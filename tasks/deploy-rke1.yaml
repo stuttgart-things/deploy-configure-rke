@@ -79,9 +79,3 @@
     chdir: "{{ rancher_cluster_folder }}"
   register: rke_setup
   when: inventory_hostname in groups['initial_master_node'] and rke_setup.rc != 0
-
-- name: Output post installation message
-  ansible.builtin.debug:
-    msg: "rancher-ha-server {{ rancher_cluster_name }} was successfully installed w/: {{ rke_kubernetes_version  }}"
-  register: rke_setup
-  when: rke_setup.rc == 0 and inventory_hostname in groups['initial_master_node']
