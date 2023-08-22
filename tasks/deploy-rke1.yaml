@@ -79,3 +79,12 @@
     chdir: "{{ rancher_cluster_folder }}"
   register: rke_setup
   when: inventory_hostname in groups['initial_master_node'] and rke_setup.rc != 0
+  
+- name: Fetch kubeconfig to ansible host
+  ansible.builtin.fetch:
+    src: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml" 
+    dest: "/tmp/kubeconfig"
+    flat: yes
+    run_once: true
+  when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig_local|bool
+  
