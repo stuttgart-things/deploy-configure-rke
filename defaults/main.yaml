@@ -76,7 +76,7 @@ helm_version: 3.12.0
 rke_installer_version: 1.4.8
 rke_kubernetes_version: v1.26.7-rancher1-1
 
-admin_group: sudo
+admin_group: sudo, docker
 rke_user_name: rke
 additional_group: rke
 rke_user:
