@@ -2,7 +2,7 @@ nodes:
 {% for host in groups['all'] %}
   - address: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
     internal_address: {{ hostvars[host]['ansible_default_ipv4']['address'] }}
-    user: {{ rke_user }}
+    user: {{ rke_user_name }}
     role: [controlplane,worker,etcd]
     ssh_key_path: {{ path_to_private_key }}
 {% endfor %}
