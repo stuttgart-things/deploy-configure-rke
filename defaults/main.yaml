@@ -76,8 +76,11 @@ helm_version: 3.12.0
 rke_installer_version: 1.4.8
 rke_kubernetes_version: v1.26.7-rancher1-1
 
+admin_group: sudo
+rke_user_name: rke
+additional_group: rke
 rke_user:
-  - username: rke
+  - username: "{{ rke_user_name }}"
     name: rke user
     groups: ['{{ admin_group }}', '{{ additional_group }}']
     home: /home/rke
@@ -86,7 +89,6 @@ rke_user:
     ssh_key:
       - "{{ rke_pub_key }}"
     enable_ssh_tcp_forwarding: True
-additional_group: rke
 
 kubectl_binary:
   kubectl:
