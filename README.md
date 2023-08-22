@@ -7,13 +7,10 @@ cat <<EOF > ./requirements.yaml
 roles:
 - src: https://github.com/stuttgart-things/deploy-configure-rke.git
   scm: git
-  version: rke2r2-1.26.3-containerd
 - src: https://github.com/stuttgart-things/configure-rke-node.git
   scm: git
-  version: rke2r2-1.26.0
 - src: https://github.com/stuttgart-things/install-requirements.git
   scm: git
-  version: rke2r2-1.26.0 
 
 collections: 
 - name: community.crypto 
@@ -48,7 +45,29 @@ cat <<EOF > ./rke2 # or k3s
 EOF
 ```
 </details>
- 
+
+<details><summary>EXAMPLE RKE1 PLAYBOOK</summary>
+---
+- hosts: all
+  become: true
+
+  vars:
+    rke_version: 1
+    rke_kubernetes_version: v1.26.7-rancher1-1
+    rke_installer_version: 1.4.8
+    rke_install_host: rke1smt.labul.sva.de
+    project_folder: rancher-things
+    rke_docker_version: '=5:23.0.6-1~ubuntu.22.04~jammy'
+    rke_docker_ce_version: '5:23.0.6*'
+    path_to_private_key: "/home/sthings/{{ project_folder }}/rke_rsa"
+    rke_create_rke_user: true
+    network_plugin: calico
+    rke2_airgapped_installation: false
+
+  roles:
+    - role: deploy-configure-rke
+ </details>
+
 <details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
 
 ```
