@@ -54,13 +54,12 @@ EOF
   become: true
 
   vars:
-    rke_version: 1
-    rke_kubernetes_version: v1.26.7-rancher1-1
-    rke_installer_version: 1.4.8
-    rke_install_host: rke1smt.labul.sva.de
-    project_folder: rancher-things
     rke_docker_version: '=5:23.0.6-1~ubuntu.22.04~jammy'
     rke_docker_ce_version: '5:23.0.6*'
+    rke_version: 1
+    rke_installer_version: 1.4.8
+    rke_kubernetes_version: v1.26.7-rancher1-1
+    project_folder: rancher-things
     path_to_private_key: "/home/sthings/{{ project_folder }}/rke_rsa"
     rke_create_rke_user: true
     network_plugin: calico
@@ -82,6 +81,7 @@ cat <<EOF > ./play.yaml
   vars:
     rke_version: 2
     rke2_k8s_version: 1.26.0
+    rke2_airgapped_installation: true
     rke2_release_kind: rke2r2 # rke2r1
     disable_rke2_components: 
       - rke2-ingress-nginx
@@ -107,6 +107,7 @@ cat <<EOF > ./play.yaml
   vars:
     containerdRootPath: /net/rngvm00556/fs0
     rke_version: 2
+    rke2_airgapped_installation: true
     rke2_k8s_version: 1.26.0
     rke2_release_kind: rke2r2 #rke2r1
     cluster_setup: singlenode
