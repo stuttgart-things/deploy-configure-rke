@@ -1,11 +1,19 @@
 ---
 - name: Download and install addons
   ansible.builtin.include_tasks: install-addons.yaml
-  
+
+- name: Create rancher cluster folder 
+  ansible.builtin.file:
+    path: "{{ rancher_cluster_folder }}"
+    state: directory
+    mode: '0755'
+  tags: setup
+  delegate_to: 127.0.0.1
+
 - name: Create rancher cluster config
   ansible.builtin.template:
     src: rke1-config.yaml.j2
-    dest: "{{ rancher_cluster_folder }}"
+    dest: "{{ rancher_cluster_folder }}/{{ rke1_cluster_config }}"
     backup: yes
     mode: u=rw,g=,o=
   tags: config
