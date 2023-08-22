@@ -47,6 +47,8 @@ EOF
 </details>
 
 <details><summary>EXAMPLE RKE1 PLAYBOOK</summary>
+
+```
 ---
 - hosts: all
   become: true
@@ -66,7 +68,9 @@ EOF
 
   roles:
     - role: deploy-configure-rke
- </details>
+```
+
+</details>
 
 <details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
 
