@@ -8,7 +8,6 @@
     state: directory
     mode: '0755'
   tags: setup
-  delegate_to: initial_master_node
   when: inventory_hostname in groups['initial_master_node']
   
 - name: Create rancher cluster config
@@ -18,14 +17,11 @@
     backup: yes
     mode: u=rw,g=,o=
   tags: config
-  delegate_to: initial_master_node
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Download and install rke1-installer
   ansible.builtin.include_role:
     name: download-install-binary
-    apply:
-      delegate_to: initial_master_node
   loop: "{{ lookup('dict', rke_installer_binary, wantlist=True) }}"
   when: install_rke_installer|bool and inventory_hostname in groups['initial_master_node']
 
@@ -34,7 +30,6 @@
     path: "{{ path_to_private_key }}"
   register: keypair_exists 
   tags: keysetup
-  delegate_to: initial_master_node
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Generate rancher key-pair for creating/managing a rancher ha-server
@@ -44,7 +39,6 @@
     size: 2048
     force: no
     unsafe_writes: no
-  delegate_to: initial_master_node
   when: inventory_hostname in groups['initial_master_node']
   tags: keysetup
 
@@ -53,14 +47,12 @@
     
     - name: Read pub key from inital master
       ansible.builtin.shell: cat {{ path_to_private_key }}.pub
-      register: rke2_token
-      delegate_to: initial_master_node
+      register: pub_key
 
     - name: Set pub key from inital master
       ansible.builtin.set_fact:
-        rke_pub_key: "{{ rke2_token.stdout }}"
+        rke_pub_key: "{{ pub_key.stdout }}"
       run_once: true
-      delegate_to: initial_master_node
 
   when: inventory_hostname in groups['initial_master_node']
 
@@ -77,7 +69,6 @@
     chdir: "{{ rancher_cluster_folder }}"
   register: rke_setup
   ignore_errors: true
-  delegate_to: initial_master_node
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Retry Provisioning of rke
@@ -86,11 +77,9 @@
     yes | {{ path_to_rke_installer_binary }} up --config ./{{ rke_cluster_config_name }}
   args:
     chdir: "{{ rancher_cluster_folder }}"
-  delegate_to: initial_master_node
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Output post installation message
   ansible.builtin.debug:
     msg: "rancher-ha-server {{ rancher_cluster_name }} was successfully installed w/: {{ rke_kubernetes_version  }}"
   when: cluster_exists.stat.exists != true and inventory_hostname in groups['initial_master_node']
-  delegate_to: initial_master_node
