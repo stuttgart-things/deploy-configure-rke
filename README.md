@@ -65,7 +65,6 @@ cat <<EOF > ./play.yaml
     rke_installer_version: 1.4.8
     rke_kubernetes_version: v1.26.7-rancher1-1
     project_folder: rancher-things
-    path_to_private_key: "/home/sthings/{{ project_folder }}/rke_rsa"
     rke_create_rke_user: true
     network_plugin: calico
     rke2_airgapped_installation: false
