@@ -34,7 +34,7 @@ ansible-galaxy install -r ./requirements.yaml -f
 <details><summary>EXAMPLE INVENTORY</summary>
 
 ```
-cat <<EOF > ./rke2 # or k3s
+cat <<EOF > ./inv
 # MULTINODE-CLUSTER
 [initial_master_node]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
@@ -53,6 +53,7 @@ EOF
 <details><summary>EXAMPLE RKE1 PLAYBOOK</summary>
 
 ```
+cat <<EOF > ./play.yaml
 ---
 - hosts: all
   become: true
@@ -71,6 +72,9 @@ EOF
 
   roles:
     - role: deploy-configure-rke
+EOF
+
+ansible-playbook -i inv play.yaml -vv
 ```
 
 </details>
@@ -98,7 +102,7 @@ cat <<EOF > ./play.yaml
     - role: deploy-configure-rke
 EOF
   
-ansible-playbook -i rke2 #k3s play.yaml -vv
+ansible-playbook -i inv play.yaml -vv
 ```
 </details>
 
@@ -131,7 +135,7 @@ cat <<EOF > ./play.yaml
     - role: deploy-configure-rke
 EOF
 
-ansible-playbook -i rke2 play.yaml -vv
+ansible-playbook -i inv play.yaml -vv
 ```
 </details>
 
@@ -158,7 +162,7 @@ cat <<EOF > ./play.yaml
     - role: deploy-configure-rke
 EOF
   
-ansible-playbook -i k3s play.yaml -vv
+ansible-playbook -i inv play.yaml -vv
 ```
 </details>
 
