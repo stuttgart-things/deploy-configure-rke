@@ -79,6 +79,15 @@
     chdir: "{{ rancher_cluster_folder }}"
   register: rke_setup
   when: inventory_hostname in groups['initial_master_node'] and rke_setup.rc != 0
+
+- name: Change permission for files in rancher cluster folder 
+  ansible.builtin.file:
+    path: "{{ rancher_cluster_folder }}"
+    state: directory
+    recurse: yes
+    owner: "{{ rke_user }}"
+    group: "{{ rke_user }}"
+  when: inventory_hostname in groups['initial_master_node']
   
 - name: Fetch kubeconfig to ansible host
   ansible.builtin.fetch:
