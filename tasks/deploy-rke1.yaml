@@ -85,8 +85,8 @@
     path: "{{ rancher_cluster_folder }}"
     state: directory
     recurse: yes
-    owner: "{{ rke_user }}"
-    group: "{{ rke_user }}"
+    owner: "{{ rke_username }}"
+    group: "{{ rke_username }}"
   when: inventory_hostname in groups['initial_master_node']
   
 - name: Fetch kubeconfig to ansible host
