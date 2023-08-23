@@ -11,12 +11,16 @@ roles:
   scm: git
 - src: https://github.com/stuttgart-things/install-requirements.git
   scm: git
+- src: https://github.com/stuttgart-things/install-configure-docker.git
+  scm: git
+- src: https://github.com/stuttgart-things/create-os-user.git
+  scm: git
 
 collections: 
 - name: community.crypto 
-  version: 2.13.0 
+  version: 2.15.1 
 - name: community.general 
-  version: 7.0.0 
+  version: 7.3.0 
 - name: ansible.posix 
   version: 1.5.2 
 - name: kubernetes.core
