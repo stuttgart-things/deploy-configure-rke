@@ -3,6 +3,7 @@ rke_state: present
 rke_version: 2
 prepare_rancher_ha_nodes: true
 rke_install_docker: "{{ true if rke_version==1 else false }}"
+docker_version: "23.0.6"
 os_docker_package_version:
   "23.0.6":
     Debian:
