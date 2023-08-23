@@ -52,6 +52,7 @@ operation: deploy
 rke_parameter: up
 rke_statefile_name: rancher-cluster.rkestate
 rke_cluster_config_name: rancher-cluster.yml
+fetch_kubeconfig_local: true
 path_to_kubeconfig: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
 path_to_rke_statefile: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
 path_to_rke_cluster_config: "{{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}"
