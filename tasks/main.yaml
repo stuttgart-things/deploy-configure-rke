@@ -4,8 +4,8 @@
     name: configure-rke-node
   vars:
     install_docker: "{{ rke_install_docker }}"
-    docker_version: "{{ rke_docker_version }}"
-    docker_ce_version: "{{ rke_docker_ce_version }}"
+    docker_version: '{{ os_docker_package_version[docker_version][ansible_os_family][ansible_distribution_major_version|int] }}'
+    docker_ce_version: '{{ os_docker_ce_package_version[docker_version][ansible_os_family][ansible_distribution_major_version|int] }}'
     template_creation_setup: true
   when: prepare_rancher_ha_nodes|bool
 
