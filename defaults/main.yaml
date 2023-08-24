@@ -70,7 +70,7 @@ install_rke_installer: true
 rancher_cluster_name: rancher-things
 rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
 network_plugin: canal
-path_to_private_key: "{{ rancher_cluster_folder }}"
+path_to_private_key: "{{ rancher_cluster_folder }}/rke_rsa"
 
 kubectl_version: 1.28.0
 helm_version: 3.12.0
