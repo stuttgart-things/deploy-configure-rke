@@ -14,8 +14,10 @@ os_docker_ce_package_version:
     Debian:
       22: '5:23.0.6*'
       23: '5:23.0.6*'
-#rke_docker_version: '=5:23.0.6-1~ubuntu.23.04~lunar'
-#rke_docker_ce_version: '5:23.0.6*'
+
+rke_docker_version: '{{ os_docker_package_version[docker_version][ansible_os_family][ansible_distribution_major_version|int] }}'
+rke_docker_ce_version: '{{ os_docker_ce_package_version[docker_version][ansible_os_family][ansible_distribution_major_version|int] }}'     
+
 template_creation_setup: true
 cluster_setup: multinode
 # rke2
