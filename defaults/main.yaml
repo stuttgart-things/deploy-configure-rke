@@ -3,7 +3,7 @@ rke_state: present
 rke_version: 2
 prepare_rancher_ha_nodes: true
 rke_install_docker: "{{ true if rke_version==1 else false }}"
-docker_version: "23.0.6"
+docker_package_version: "23.0.6"
 os_docker_package_version:
   "23.0.6":
     Debian:
@@ -15,8 +15,8 @@ os_docker_ce_package_version:
       22: '5:23.0.6*'
       23: '5:23.0.6*'
 
-rke_docker_version: '{{ os_docker_package_version[docker_version][ansible_os_family][ansible_distribution_major_version|int] }}'
-rke_docker_ce_version: '{{ os_docker_ce_package_version[docker_version][ansible_os_family][ansible_distribution_major_version|int] }}'     
+rke_docker_version: '{{ os_docker_package_version[docker_package_version][ansible_os_family][ansible_distribution_major_version|int] }}'
+rke_docker_ce_version: '{{ os_docker_ce_package_version[docker_package_version][ansible_os_family][ansible_distribution_major_version|int] }}'     
 
 template_creation_setup: true
 cluster_setup: multinode
