@@ -53,3 +53,7 @@
 - name: Remove k3s
   ansible.builtin.include_tasks: remove-k3s.yaml
   when: install_k3s|bool and k3s_state == "absent"
+
+- name: Deploy helm charts
+  ansible.builtin.include_tasks: deploy-helm-charts.yaml
+  when: deploy_helm_charts|bool

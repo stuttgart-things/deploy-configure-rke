@@ -1,0 +1,20 @@
+---
+- name: Add helm chart repositories
+  kubernetes.core.helm_repository:
+    name: "{{ item.key }}"
+    repo_url: "{{ item.value.url }}"
+    force_update: true
+  loop: "{{ q('ansible.builtin.dict', helm_repositories) }}"
+  when: helm_repositories is defined
+
+- name: Deploy helm charts 
+  kubernetes.core.helm:
+    kubeconfig: "{{ path_to_kubeconfig }}"
+    name: "{{ item.key }}"
+    chart_ref: "{{ item.value.ref }}"
+    chart_version: "{{ item.value.version | default('latest') }}"
+    release_namespace: "{{ item.value.namespace }}"
+    create_namespace: true
+    state: "{{ helm_state }}"
+  loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
+  when: helm_releases is defined

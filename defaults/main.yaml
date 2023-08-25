@@ -224,3 +224,5 @@ containerd_paths:
   - "{{ containerd_state_dir_custom }}"
   - "{{ pv_dir_default }}"
   - "{{ pv_dir_custom }}"
+
+deploy_helm_charts: false
