@@ -62,6 +62,7 @@ cat <<EOF > ./play.yaml
     rke_docker_version: '=5:23.0.6-1~ubuntu.22.04~jammy'
     rke_docker_ce_version: '5:23.0.6*'
     rke_version: 1
+    rke_user_name: rke
     rke_installer_version: 1.4.8
     rke_kubernetes_version: v1.26.7-rancher1-1
     project_folder: rancher-things
