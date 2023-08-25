@@ -226,3 +226,4 @@ containerd_paths:
   - "{{ pv_dir_custom }}"
 
 deploy_helm_charts: false
+helm_state: present
