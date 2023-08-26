@@ -25,5 +25,5 @@
     kubeconfig: "{{ helm_kubeconfig }}"
     state: present
     definition: "{{ lookup('file', 'manifest-file.yaml.j2') | from_yaml }}"
-  loop: "{{ additional_helm_manifests }}"
+  loop: "{{ q('ansible.builtin.dict', additional_helm_manifests) }}"
   when: additional_helm_manifests is defined
