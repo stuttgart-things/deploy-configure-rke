@@ -7,6 +7,10 @@
   loop: "{{ q('ansible.builtin.dict', helm_repositories) }}"
   when: helm_repositories is defined
 
+- name: Set kubeconfig path based on rke version
+  ansible.builtin.set_fact:
+    helm_kubeconfig_path: 
+
 - name: Deploy helm charts 
   kubernetes.core.helm:
     kubeconfig: "{{ path_to_kubeconfig }}"
