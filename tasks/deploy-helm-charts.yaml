@@ -19,3 +19,11 @@
     values: "{{ helm_values | default(omit) }}"
   loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
   when: helm_releases is defined
+
+- name: Deploy additional manifests
+  kubernetes.core.k8s:
+    kubeconfig: "{{ helm_kubeconfig }}"
+    state: present
+    definition: "{{ lookup('file', 'manifest-file.yaml.j2') | from_yaml }}"
+  loop: "{{ additional_helm_manifests }}"
+  when: additional_helm_manifests is defined
