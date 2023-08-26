@@ -30,6 +30,6 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ helm_kubeconfig }}"
     state: present
-    definition: "{{ lookup('file', 'manifest-file.yaml.j2') | from_yaml }}"
+    definition: "{{ lookup('template', 'manifest-file.yaml.j2') | from_yaml }}"
   loop: "{{ q('ansible.builtin.dict', additional_helm_manifests) }}"
   when: additional_helm_manifests is defined
