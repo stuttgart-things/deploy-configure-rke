@@ -16,5 +16,6 @@
     release_namespace: "{{ item.value.namespace }}"
     create_namespace: true
     state: "{{ helm_state }}"
+    values: "{{ helm_values | default(omit) }}"
   loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
   when: helm_releases is defined
