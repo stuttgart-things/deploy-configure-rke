@@ -24,7 +24,8 @@
     values: "{{ helm_values | default(omit) }}"
   loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
   when: helm_releases is defined
-
+  ignore_errors: "{{ item.value.ignore | default(omit) }}"
+  
 - name: Deploy additional manifests
   kubernetes.core.k8s:
     kubeconfig: "{{ helm_kubeconfig }}"
