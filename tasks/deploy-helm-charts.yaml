@@ -9,7 +9,7 @@
   
 - name: Deploy helm charts 
   kubernetes.core.helm:
-    kubeconfig: "{{ path_to_kubeconfig }}"
+    kubeconfig: "{{ helm_kubeconfig }}"
     name: "{{ item.key }}"
     chart_ref: "{{ item.value.ref }}"
     chart_version: "{{ item.value.version | default('latest') }}"
