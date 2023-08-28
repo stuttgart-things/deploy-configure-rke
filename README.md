@@ -15,6 +15,8 @@ roles:
   scm: git
 - src: https://github.com/stuttgart-things/create-os-user.git
   scm: git
+- src: https://github.com/stuttgart-things/download-install-binary.git
+  scm: git
 
 collections: 
 - name: community.crypto 
