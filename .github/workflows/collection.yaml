@@ -1,1 +1,21 @@
 ---
+name: Build Publish Collection 
+on:
+  workflow_dispatch:
+    inputs:
+      runs-on:
+        type: string
+        required: false
+        default: ghr-deploy-configure-rke-cicd
+      environment-name:
+        type: string
+        required: true
+        default: k8s
+        
+jobs:
+  Build-Publish-Collection:
+    name: Build And Publish Ansible Collection 
+    uses: stuttgart-things/stuttgart-things/.github/workflows/lint-yaml.yaml@yaml-lint-1
+    with:
+      runs-on: ${{ inputs.runs-on }}
+      environment-name: ${{ inputs.environment-name }}
