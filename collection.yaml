@@ -41,7 +41,7 @@ playbooks:
           rke2_airgapped_installation: false
 
         roles:
-          - role: deploy-configure-rke
+          - role: deploy_configure_rke
           
   - name: rke2
     play: |
@@ -61,5 +61,5 @@ playbooks:
           containerdRootPath: /var/lib/containerd/ # directory must not exist
 
         roles:
-          - role: deploy-configure-rke
+          - role: deploy_configure_rke
           
