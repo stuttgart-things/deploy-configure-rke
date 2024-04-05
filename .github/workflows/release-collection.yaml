@@ -1,0 +1,25 @@
+---
+name: Tag & Release Collection
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        type: string
+        required: true
+      runs-on:
+        type: string
+        required: false
+        default: ghr-deploy-configure-rke-cicd
+      environment-name:
+        type: string
+        required: true
+        default: k8s
+
+jobs:
+  Create-Git-Tag:
+    name: Create-Git-Tag
+    uses: stuttgart-things/stuttgart-things/.github/workflows/git-tag.yaml@main
+    with:
+      runs-on: ${{ inputs.runs-on }}
+      environment-name: ${{ inputs.environment-name }}
+      continue-error: false
