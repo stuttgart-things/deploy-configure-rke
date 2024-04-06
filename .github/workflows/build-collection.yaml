@@ -20,3 +20,13 @@ jobs:
       runs-on: ${{ inputs.runs-on }}
       environment-name: ${{ inputs.environment-name }}
       continue-error: false
+
+  Create-Git-Tag:
+    name: Create-Git-Tag
+    needs: Build-Collection
+    uses: stuttgart-things/stuttgart-things/.github/workflows/git-tag.yaml@main
+    with:
+      runs-on: ${{ inputs.runs-on }}
+      environment-name: ${{ inputs.environment-name }}
+      tag-name: ${{ needs.Build-Collection.outputs.version }}
+      continue-error: false
