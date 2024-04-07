@@ -53,4 +53,4 @@ jobs:
           name: ${{ needs.Build-Collection.outputs.artifact-name }}
           artifacts: ${{ needs.Build-Collection.outputs.artifact-name }}
           body: "ansible-collection"
-          tag: ${{ needs.Build-Collection.outputs.collection-version }}
+          tag: 1.2.4 ${{ needs.Build-Collection.outputs.collection-version }}
