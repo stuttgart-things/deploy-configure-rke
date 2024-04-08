@@ -20,22 +20,3 @@ jobs:
       runs-on: ${{ inputs.runs-on }}
       environment-name: ${{ inputs.environment-name }}
       continue-error: false
-
-  Release-Collection:
-    name: Release-Collection
-    needs: Build-Collection
-    permissions:
-      contents: write
-      pull-requests: write
-    runs-on: ${{ inputs.runs-on }}
-    environment: ${{ inputs.environment-name }}
-    container:
-      image: eu.gcr.io/stuttgart-things/machineshop:v1.7.2
-    steps:          
-      - name: Release module
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          name: ${{ needs.Build-Collection.outputs.artifact-name }}
-          artifacts: ${{ needs.Build-Collection.outputs.artifact-name }}
-          body: "ansible-collection"
-          tag: 1.2.4 #${{ needs.Build-Collection.outputs.collection-version }}
