@@ -11,8 +11,6 @@ ansible-galaxy collection install -f \
 https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2/sthings-deploy_rke-1.0.0.tar.gz 
 ```
 
-### EXAMPLE PLAYBOOK CALLS
-
 <details><summary>INSTALL SINGLE NODE CLUSTER</summary>
 
 ```bash 
