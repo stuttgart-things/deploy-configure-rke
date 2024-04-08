@@ -2,6 +2,21 @@
 
 deploy rancher kubernetes engine + configuration in version 1/2 on linux based systems
 
+<details><summary>USAGE OPTION #1 - USING THE COLLECTION</summary>
+
+<details><summary>COLLECTION INSTALL </summary>
+
+</details>
+
+<details><summary>EXAMPLE PLAYBOOK CALLS</summary>
+
+</details>
+
+</details>
+
+<details><summary>USAGE OPTION #2 - USING STANDALONE ROLES + COLLECTIONS</summary>
+
+
 <details><summary>INSTALL REQUIREMENTS</summary>
 
 ```
@@ -108,11 +123,12 @@ EOF
   
 ansible-playbook -i inv play.yaml -vv
 ```
+
 </details>
 
 <details><summary>EXAMPLE RKE2 + CUSTOM CONTAINERD + PROXY PLAYBOOK</summary>
 
-  ```
+```bash
 cat <<EOF > ./play.yaml
 - hosts: all
   become: true
@@ -168,6 +184,7 @@ EOF
   
 ansible-playbook -i inv play.yaml -vv
 ```
+
 </details>
 
 <details><summary>EXAMPLE EXECUTION</summary>
@@ -175,7 +192,11 @@ ansible-playbook -i inv play.yaml -vv
 ```
 ansible-playbook -i rke2 play.yaml -vv
 ```
+
 </details>
+
+</details>
+
 
 Author Information
 ------------------
