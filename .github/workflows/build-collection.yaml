@@ -21,19 +21,9 @@ jobs:
       environment-name: ${{ inputs.environment-name }}
       continue-error: false
 
-  Create-Git-Tag:
-    name: Create-Git-Tag
-    needs: Build-Collection
-    uses: stuttgart-things/stuttgart-things/.github/workflows/git-tag.yaml@main
-    with:
-      runs-on: ${{ inputs.runs-on }}
-      environment-name: ${{ inputs.environment-name }}
-      tag-name: ${{ needs.Build-Collection.outputs.collection-version }}
-      continue-error: false
-
   Release-Collection:
     name: Release-Collection
-    needs: Create-Git-Tag
+    needs: Build-Collection
     permissions:
       contents: write
       pull-requests: write
@@ -41,16 +31,11 @@ jobs:
     environment: ${{ inputs.environment-name }}
     container:
       image: eu.gcr.io/stuttgart-things/machineshop:v1.7.2
-    steps:
-      - name: Download collection
-        id: download
-        uses: actions/download-artifact@v4.1.4
-        with:
-          name: ${{ needs.Build-Collection.outputs.artifact-name }}
+    steps:          
       - name: Release module
-        uses: ncipollo/release-action@v1.13.0
+        uses: ncipollo/release-action@v1.14.0
         with:
           name: ${{ needs.Build-Collection.outputs.artifact-name }}
           artifacts: ${{ needs.Build-Collection.outputs.artifact-name }}
           body: "ansible-collection"
-          tag: 1.2.4 ${{ needs.Build-Collection.outputs.collection-version }}
+          tag: 1.2.4 #${{ needs.Build-Collection.outputs.collection-version }}
