@@ -4,15 +4,36 @@ deploy rancher kubernetes engine + configuration in version 1/2 on linux based s
 
 <details><summary>USAGE OPTION #1 - USING THE COLLECTION</summary>
 
-<details><summary>COLLECTION INSTALL </summary>
+### COLLECTION INSTALLATION
+
+```bash
+ansible-galaxy collection install -f \
+https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2/sthings-deploy_rke-1.0.0.tar.gz 
+```
+
+### EXAMPLE PLAYBOOK CALLS
+
+<details><summary>INSTALL SINGLE NODE CLUSTER</summary>
+
+```bash 
+# CREATE INVENTORY
+cat <<EOF > rke2
+[initial_master_node]
+10.100.136.151
+[additional_master_nodes]
+# no details needed
+EOF
+
+# PLAYBOOK CALL
+ansible-playbook sthings.deploy_rke.rke2 \
+-i rke2 -vv \
+-e cluster_setup=singlenode
+```
 
 </details>
 
-<details><summary>EXAMPLE PLAYBOOK CALLS</summary>
-
 </details>
 
-</details>
 
 <details><summary>USAGE OPTION #2 - USING STANDALONE ROLES + COLLECTIONS</summary>
 
