@@ -24,7 +24,6 @@ requirements: |
       version: 2024.07.04
 
 vars: {}
-
 playbooks:
   - name: rke2
     play: |
