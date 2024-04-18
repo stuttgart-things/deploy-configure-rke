@@ -1,6 +1,6 @@
 ---
 name: deploy_rke
-version: 1.29.2
+version: 1.29.2-1
 namespace: sthings
 requirements: |
   roles:
@@ -21,9 +21,28 @@ requirements: |
       version: main
     - src: https://github.com/stuttgart-things/download-install-binary.git
       scm: git
-      version: main
+      version: 2024.07.04
+
+vars: {}
 
 playbooks:
+  - name: rke2
+    play: |
+      - hosts: all
+        become: true
+        vars:
+          rke_version: 2
+          rke2_k8s_version: 1.29.2
+          rke2_airgapped_installation: true
+          rke2_release_kind: rke2r1
+          disable_rke2_components:
+            - rke2-ingress-nginx
+            - rke-snapshot-controller
+          cluster_setup: multinode
+
+        roles:
+          - role: sthings.deploy_rke.deploy_configure_rke
+
   - name: rke1
     play: |
       - hosts: all
@@ -39,23 +58,6 @@ playbooks:
           rke_create_rke_user: true
           network_plugin: calico
           rke2_airgapped_installation: false
-
-        roles:
-          - role: sthings.deploy_rke.deploy_configure_rke
-          
-  - name: rke2
-    play: |
-      - hosts: all
-        become: true
-        vars:
-          rke_version: 2
-          rke2_k8s_version: 1.29.2
-          rke2_airgapped_installation: true
-          rke2_release_kind: rke2r1
-          disable_rke2_components:
-            - rke2-ingress-nginx
-            - rke-snapshot-controller
-          cluster_setup: multinode
 
         roles:
           - role: sthings.deploy_rke.deploy_configure_rke
