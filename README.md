@@ -9,9 +9,9 @@ USAGE OPTION #1 - USING THE COLLECTION
 [CHECK RELEASES](https://github.com/stuttgart-things/deploy-configure-rke/releases)
 
 ```bash
+# EXAMPLE COLLECTION RELEASE
 ansible-galaxy collection install -f \
 https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2-2/sthings-deploy_rke-1.29.2-2.tar.gz
-# EXAMPLE COLLECTION RELEASE
 ```
 
 <details><summary>INSTALL SINGLE NODE CLUSTER</summary>
