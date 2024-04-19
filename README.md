@@ -2,7 +2,7 @@
 
 deploy rancher kubernetes engine + configuration in version 1/2 on linux based systems
 
-USAGE OPTION #1 - USING THE COLLECTION
+## USAGE OPTION #1 - USING THE COLLECTION
 
 ### COLLECTION INSTALLATION
 
@@ -33,7 +33,7 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 </details>
 
-<details><summary>USAGE OPTION #2 - USING STANDALONE ROLES + COLLECTIONS</summary>
+## USAGE OPTION #2 - USING STANDALONE ROLES + COLLECTIONS</summary>
 
 
 <details><summary>INSTALL REQUIREMENTS</summary>
