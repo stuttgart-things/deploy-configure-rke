@@ -1,12 +1,14 @@
 ---
-- name: Download and install kubectl
-  ansible.builtin.include_role:
-    name: download-install-binary
-  loop: "{{ lookup('dict', kubectl_binary, wantlist=True) }}"
+- name: Install kubectl
+  block:
+    - ansible.builtin.set_fact: cli="{{ kubectl_binary|combine(kubectl_binary) }}"
+    - ansible.builtin.include_role:
+        name: download-install-binary
   when: install_kubectl|bool
-
-- name: Download and install helm
-  ansible.builtin.include_role:
-    name: download-install-binary
-  loop: "{{ lookup('dict', helm_binary, wantlist=True) }}"
+  
+- name: Install helm
+  block:
+    - ansible.builtin.set_fact: cli="{{ helm_binary|combine(helm_binary) }}"
+    - ansible.builtin.include_role:
+        name: download-install-binary
   when: install_helm|bool
