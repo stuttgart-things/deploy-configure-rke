@@ -2,13 +2,16 @@
 
 deploy rancher kubernetes engine + configuration in version 1/2 on linux based systems
 
-<details><summary>USAGE OPTION #1 - USING THE COLLECTION</summary>
+USAGE OPTION #1 - USING THE COLLECTION
 
 ### COLLECTION INSTALLATION
 
+[CHECK RELEASES](https://github.com/stuttgart-things/deploy-configure-rke/releases)
+
 ```bash
 ansible-galaxy collection install -f \
-https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2/sthings-deploy_rke-1.0.0.tar.gz 
+https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2-2/sthings-deploy_rke-1.29.2-2.tar.gz
+# EXAMPLE COLLECTION RELEASE
 ```
 
 <details><summary>INSTALL SINGLE NODE CLUSTER</summary>
@@ -29,9 +32,6 @@ ansible-playbook sthings.deploy_rke.rke2 \
 ```
 
 </details>
-
-</details>
-
 
 <details><summary>USAGE OPTION #2 - USING STANDALONE ROLES + COLLECTIONS</summary>
 
@@ -67,11 +67,12 @@ EOF
 
 ansible-galaxy install -r ./requirements.yaml -f
 ```
+
 </details>
 
 <details><summary>EXAMPLE INVENTORY</summary>
 
-```
+```bash
 cat <<EOF > ./inv
 # MULTINODE-CLUSTER
 [initial_master_node]
@@ -119,7 +120,7 @@ ansible-playbook -i inv play.yaml -vv
 
 <details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
 
-```
+```bash
 cat <<EOF > ./play.yaml
 - hosts: all
   become: true
@@ -176,12 +177,13 @@ EOF
 
 ansible-playbook -i inv play.yaml -vv
 ```
+
 </details>
 
   
 <details><summary>EXAMPLE K3S PLAYBOOK</summary>
 
-```
+```bash
 cat <<EOF > ./play.yaml
 - hosts: all
   become: true
@@ -208,7 +210,7 @@ ansible-playbook -i inv play.yaml -vv
 
 <details><summary>EXAMPLE EXECUTION</summary>
 
-```
+```bash
 ansible-playbook -i rke2 play.yaml -vv
 ```
 
