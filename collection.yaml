@@ -21,7 +21,7 @@ requirements: |
       version: main
     - src: https://github.com/stuttgart-things/download-install-binary.git
       scm: git
-      version: 2024.07.04
+      version: 2024.04.19
 
 vars: {}
 playbooks:
