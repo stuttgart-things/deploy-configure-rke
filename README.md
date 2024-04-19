@@ -26,9 +26,14 @@ cat <<EOF > rke2
 EOF
 
 # PLAYBOOK CALL
+CLUSTER_NAME=rke2
+mkdir ~/.kube/${CLUSTER_NAME}
+
 ansible-playbook sthings.deploy_rke.rke2 \
 -i rke2 -vv \
--e cluster_setup=singlenode
+-e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
+-e cluster_setup=singlenode \
+-vv
 ```
 
 </details>
