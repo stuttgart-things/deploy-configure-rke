@@ -14,7 +14,7 @@ ansible-galaxy collection install -f \
 https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2-2/sthings-deploy_rke-1.29.2-2.tar.gz
 ```
 
-<details><summary>INSTALL SINGLE NODE CLUSTER</summary>
+<details><summary>INSTALL SINGLE-NODE CLUSTER</summary>
 
 ```bash 
 # CREATE INVENTORY
@@ -22,7 +22,7 @@ cat <<EOF > rke2
 [initial_master_node]
 10.100.136.151
 [additional_master_nodes]
-# no details needed
+# no details needed but group needs to be defined
 EOF
 
 # PLAYBOOK CALL
@@ -33,6 +33,31 @@ ansible-playbook sthings.deploy_rke.rke2 \
 -i rke2 -vv \
 -e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
 -e cluster_setup=singlenode \
+-vv
+```
+
+</details>
+
+<details><summary>INSTALL MULTI-NODE CLUSTER</summary>
+
+```bash 
+# CREATE INVENTORY
+cat <<EOF > rke2
+[initial_master_node]
+10.100.136.151
+[additional_master_nodes]
+10.100.136.152
+10.100.136.153
+EOF
+
+# PLAYBOOK CALL
+CLUSTER_NAME=rke2
+mkdir ~/.kube/${CLUSTER_NAME}
+
+ansible-playbook sthings.deploy_rke.rke2 \
+-i rke2 -vv \
+-e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
+-e cluster_setup=multinode \
 -vv
 ```
 
