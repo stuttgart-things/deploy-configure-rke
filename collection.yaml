@@ -13,15 +13,15 @@ requirements: |
     - src: https://github.com/stuttgart-things/install-requirements.git
       scm: git
       version: main
-    - src: https://github.com/stuttgart-things/install-configure-docker.git
-      scm: git
-      version: main
-    - src: https://github.com/stuttgart-things/create-os-user.git
-      scm: git
-      version: main
     - src: https://github.com/stuttgart-things/download-install-binary.git
       scm: git
       version: 2024.04.19
+    - src: https://github.com/stuttgart-things/create-os-user.git
+      scm: git
+      version: 2024.04.25
+    - src: https://github.com/stuttgart-things/install-configure-docker.git
+      scm: git
+      version: 2024.04.30
 
 vars: {}
 playbooks:
