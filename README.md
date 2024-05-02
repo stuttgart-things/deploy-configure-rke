@@ -27,7 +27,7 @@ EOF
 
 # PLAYBOOK CALL
 CLUSTER_NAME=rke2
-mkdir ~/.kube/${CLUSTER_NAME}
+mkdir ~/.kube/
 
 ansible-playbook sthings.deploy_rke.rke2 \
 -i rke2 -vv \
