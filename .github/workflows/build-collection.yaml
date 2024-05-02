@@ -10,7 +10,7 @@ on:
 jobs:
   Build-Collection:
     name: Build Ansible Collection
-    uses: stuttgart-things/stuttgart-things/.github/workflows/push-ansible-collection.yaml@main    
+    uses: stuttgart-things/stuttgart-things/.github/workflows/call-ansible-collection.yaml@main    
     with:
       runs-on: ghr-deploy-configure-rke-cicd
       environment-name: k8s
