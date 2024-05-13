@@ -10,8 +10,9 @@ deploy rancher kubernetes engine + configuration in version 1/2 on linux based s
 
 ```bash
 # EXAMPLE COLLECTION RELEASE
+VERSION=1.29.4
 ansible-galaxy collection install -f \
-https://github.com/stuttgart-things/deploy-configure-rke/releases/download/1.29.2-2/sthings-deploy_rke-1.29.2-2.tar.gz
+https://github.com/stuttgart-things/deploy-configure-rke/releases/download/${VERSION}/sthings-deploy_rke-${VERSION}.tar.gz
 ```
 
 <details><summary>INSTALL SINGLE-NODE CLUSTER</summary>
