@@ -15,3 +15,4 @@ jobs:
       runs-on: ghr-deploy-configure-rke-labda-test
       environment-name: k8s
       continue-error: false
+      collection-file: collection.yaml
