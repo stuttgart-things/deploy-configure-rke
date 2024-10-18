@@ -17,7 +17,7 @@ https://github.com/stuttgart-things/deploy-configure-rke/releases/download/${VER
 
 <details><summary>INSTALL SINGLE-NODE CLUSTER</summary>
 
-```bash 
+```bash
 # CREATE INVENTORY
 cat <<EOF > rke2
 [initial_master_node]
@@ -41,7 +41,7 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 <details><summary>INSTALL MULTI-NODE CLUSTER</summary>
 
-```bash 
+```bash
 # CREATE INVENTORY
 cat <<EOF > rke2
 [initial_master_node]
@@ -64,6 +64,34 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 </details>
 
+
+<details><summary>UNINSTALL</summary>
+
+```bash
+# CREATE INVENTORY
+cat <<EOF > rke2
+[initial_master_node]
+10.100.136.151
+[additional_master_nodes]
+10.100.136.152
+10.100.136.153
+EOF
+
+# PLAYBOOK CALL
+CLUSTER_NAME=rke2
+mkdir ~/.kube/${CLUSTER_NAME}
+
+ansible-playbook sthings.deploy_rke.rke2 \
+-i rke2 -vv \
+-e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
+-e cluster_setup=multinode \
+-e rke_state: absent \
+-vv
+```
+
+</details>
+
+
 ## USAGE OPTION #2 - USING STANDALONE ROLES + COLLECTIONS</summary>
 
 
@@ -85,13 +113,13 @@ roles:
 - src: https://github.com/stuttgart-things/download-install-binary.git
   scm: git
 
-collections: 
-- name: community.crypto 
-  version: 2.15.1 
-- name: community.general 
-  version: 7.3.0 
-- name: ansible.posix 
-  version: 1.5.2 
+collections:
+- name: community.crypto
+  version: 2.15.1
+- name: community.general
+  version: 7.3.0
+- name: ansible.posix
+  version: 1.5.2
 - name: kubernetes.core
   version: 2.4.0
 EOF
@@ -108,7 +136,7 @@ cat <<EOF > ./inv
 # MULTINODE-CLUSTER
 [initial_master_node]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-[additional_master_nodes] 
+[additional_master_nodes]
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 {{ .fqdn }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
@@ -161,17 +189,17 @@ cat <<EOF > ./play.yaml
     rke2_k8s_version: 1.26.0
     rke2_airgapped_installation: true
     rke2_release_kind: rke2r2 # rke2r1
-    disable_rke2_components: 
+    disable_rke2_components:
       - rke2-ingress-nginx
       - rke-snapshot-controller
     cluster_setup: multinode
     install_containerd: false # bring your own containerd
     containerdRootPath: /var/lib/containerd/ # directory must not exist
-  
+
   roles:
     - role: deploy-configure-rke
 EOF
-  
+
 ansible-playbook -i inv play.yaml -vv
 ```
 
@@ -201,7 +229,7 @@ cat <<EOF > ./play.yaml
     containerd_proxy_config: |
       Environment="HTTP_PROXY=http://127.0.0.1:3128/"
       Environment="HTTPS_PROXY=http://127.0.0.1:3128/"
-      # Environment..  
+      # Environment..
   roles:
     - role: deploy-configure-rke
 EOF
@@ -211,7 +239,7 @@ ansible-playbook -i inv play.yaml -vv
 
 </details>
 
-  
+
 <details><summary>EXAMPLE K3S PLAYBOOK</summary>
 
 ```bash
@@ -225,15 +253,15 @@ cat <<EOF > ./play.yaml
     k3s_k8s_version: 1.21.1
     k3s_release_kind: k3s1
     k3s_parameters:
-      - "--write-kubeconfig-mode 644"  
+      - "--write-kubeconfig-mode 644"
     cluster_setup: multinode
     install_containerd: false # bring your own containerd
     containerdRootPath: /var/lib/containerd/ # only if install_containerd true
-  
+
   roles:
     - role: deploy-configure-rke
 EOF
-  
+
 ansible-playbook -i inv play.yaml -vv
 ```
 
@@ -274,4 +302,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 </details>
-
