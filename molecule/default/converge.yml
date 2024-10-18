@@ -9,7 +9,7 @@
   #       sudo apt-get update -y
 
   vars:
-    rke_state: absent
+    #rke_state: absent
     rke_version: 2
     rke2_k8s_version: 1.26.0
     rke2_airgapped_installation: true
