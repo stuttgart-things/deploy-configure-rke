@@ -12,7 +12,7 @@ driver:
   name: default
   managed: False
 platforms:
-  - name: rke2-test.labul.sva.de #michigan.labul.sva.de
+  - name: rke2-test-molecule.labul.sva.de
 provisioner:
   name: ansible
   env:
