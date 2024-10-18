@@ -26,9 +26,9 @@ tasks:
   setup-venv:
     desc: "Setup python virtual environment"
     cmds:
-      - rm -rf ./venv
-      - python3 -m venv ./venv
-      - echo "Don't forget to run\nsource ./venv/bin/activate"
+      - rm -rf ./.venv
+      - python3 -m venv ./.venv
+      - echo "Don't forget to run\nsource ./.venv/bin/activate"
 
   branch:
     desc: Create branch from main
