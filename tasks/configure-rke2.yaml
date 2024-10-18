@@ -7,7 +7,7 @@
     group: "{{ rke2_user_group }}"
     mode: 0755
   tags: rke2_config
-  
+
 - name: Add proxy details in rke2-server service
   ansible.builtin.copy:
     dest: "{{ rke2_server_service_dir }}/{{ rke2_server_service_env_config }}"
@@ -20,9 +20,28 @@
   ansible.builtin.include_tasks: configure-registries.yaml
   when: rke2_registry_configs is defined
 
+- name: Create config dir
+  ansible.builtin.file:
+    path: "{{ rke2_additional_manifests_path }}"
+    state: directory
+    owner: "{{ rke2_user_name }}"
+    group: "{{ rke2_user_group }}"
+    mode: 0755
+  tags: rke2_config
+
+- name: Create helmchart config
+  ansible.builtin.template:
+    src: "{{ helm_template }}"
+    dest: "{{ rke2_additional_manifests_path }}/{{ item.value.name }}.yaml"
+  tags: rke2_config
+  loop: "{{ lookup('dict', helmChartConfig, wantlist=True) }}"
+  when: helmChartConfig is defined and helmChartConfig | length > 0
+  loop_control:
+    label: "{{ item.key }}"
+
 - name: Create rke2 config
   ansible.builtin.template:
-    src: rke2-config.yaml.j2
+    src: "{{ rke2_config }}"
     dest: "{{ rke2_config_dir }}/config.yaml"
   tags: rke2_config
 

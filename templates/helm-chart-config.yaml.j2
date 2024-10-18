@@ -1,0 +1,9 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: {{ item.value.name }}
+  namespace: {{ item.value.namespace }}
+spec:
+  valuesContent: |-
+{{ item.value.release_values | indent(4, true) }}
