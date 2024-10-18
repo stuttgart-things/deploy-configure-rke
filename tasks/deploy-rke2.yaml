@@ -1,10 +1,10 @@
 ---
 - name: Install required packages
   ansible.builtin.include_role:
-    name: install-requirements 
+    name: install-requirements
   vars:
     os_packages: "{{ rke2_os_packages }}"
- 
+
 - name: Download and install addons
   ansible.builtin.include_tasks: install-addons.yaml
 
@@ -23,7 +23,7 @@
 
 - name: Get generated rke2 token for all additional nodes
   block:
-    
+
     - name: Read rke2 token from inital master
       ansible.builtin.shell: cat {{ rke2_path_to_generated_token }}
       register: rke2_token

@@ -1,0 +1,33 @@
+- hosts: localhost
+  vars:
+    helmChartConfig:
+      cilium:
+        name: rke2-cilium
+        namespace: kube-system
+        release_values: "{{ values_blank }}"
+
+    values_blank: |
+      ---
+      eni:
+        enabled: false
+
+  tasks:
+    - name: Create helmchart config
+      ansible.builtin.template:
+        src: "/home/sthings/projects/ansible/molecule-testing/deploy-configure-rke/templates/helm-chart-config.yaml.j2"
+        dest: "{{ item.value.name }}.yaml"
+      tags: rke2_config
+      loop: "{{ lookup('dict', helmChartConfig, wantlist=True) }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: Parse and show eni enabled value
+      set_fact:
+        eni_config: "{{ helmChartConfig.cilium.values() }}"
+
+    - name: Print helmChartConfig values
+      debug:
+        msg: "Helm Chart Config for {{ item.key }}: {{ item.value }}"
+      loop: "{{ lookup('dict', helmChartConfig, wantlist=True) }}"
+      loop_control:
+        label: "{{ item.key }}"

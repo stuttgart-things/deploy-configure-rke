@@ -1,6 +1,7 @@
 ---
 rke_state: present
 rke_version: 2
+rke_dir: "/var/lib/rancher/rke{{ rke_version }}"
 validate_certs: true
 prepare_rancher_ha_nodes: true
 rke_install_docker: "{{ true if rke_version==1 else false }}"
@@ -17,7 +18,7 @@ rke2_cni: canal
 kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
-rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
+rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
 rke2_k8s_version: 1.23.6
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
@@ -32,18 +33,18 @@ rke2_task_can_possibly_fail: "{{ true if inventory_hostname in groups['additiona
 rke2_user_group: root
 rke2_server_service: rke2-server.service
 rke2_node_register_port: 9345
-k8s_api_port: 6443
+k8s_api_port: 6443s
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
 rke2_fetched_kubeconfig_path: ./kubeconfig
-rke2_path_to_generated_token: /var/lib/rancher/rke2/server/node-token
-rke2_additional_manifests: /var/lib/rancher/rke2/server/manifests
+rke2_path_to_generated_token: "{{ rke_dir }}/node-token"
+rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
 rke2_release_kind: rke2r2
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: false
-rke2_airgapped_install_dir: /var/lib/rancher/rke2/agent/images/
+rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
 rke2_airgapped_archive: rke2-images.linux-amd64.tar.zst
 add_crictl_alias: true
-rke2_bin_dir: /var/lib/rancher/rke2/bin/
+rke2_bin_dir: "{{ rke_dir }}/bin/"
 rke2_containerd_sock: /run/k3s/containerd/containerd.sock
 network_manager_config_dir: /etc/NetworkManager/conf.d
 rke2_server_service_dir: /usr/local/lib/systemd/system
@@ -77,7 +78,7 @@ rke_kubernetes_version: v1.26.7-rancher1-1
 admin_group: "{% if ansible_os_family == 'RedHat' %}wheel{% else %}sudo{% endif %}"
 rke_user_name: rke
 additional_group: "{{ rke_user_name }}, docker"
-rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
+rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
 rancher_cluster_name: rancher-things
 network_plugin: canal
 path_to_private_key: "/root/rke_rsa"
@@ -231,3 +232,16 @@ containerd_paths:
 
 deploy_helm_charts: false
 helm_state: present
+
+rke2_config: rke2-config.yaml.j2
+helm_template: helm-chart-config.yaml.j2
+helmChartConfig:
+  cilium:
+    name: rke2-cilium
+    namespace: kube-system
+    release_values: "{{ values_cilium }}"
+
+values_cilium: |
+  ---
+  eni:
+    enabled: false
