@@ -1,8 +1,42 @@
 ---
 - name: Converge
   hosts: all
-  gather_facts: false
-  tasks:
-    - name: Replace this task with one that validates your content
-      ansible.builtin.debug:
-        msg: "This is the effective test"
+  gather_facts: true
+  become: true
+  # tasks:
+  #   - name: Replace this task with one that validates your content
+  #     ansible.builtin.shell: |
+  #       sudo apt-get update -y
+
+  vars:
+    rke_version: 2
+    rke2_k8s_version: 1.26.0
+    rke2_airgapped_installation: true
+    rke2_release_kind: rke2r2 # rke2r1
+    disable_rke2_components:
+      - rke2-ingress-nginx
+      - rke-snapshot-controller
+    cluster_setup: multinode
+    install_containerd: false # bring your own containerd
+    containerdRootPath: /var/lib/containerd/ # directory must not exist
+
+  roles:
+    - role: deploy-configure-rke
+
+# - hosts: all
+#   become: true
+
+#   vars:
+#     rke_version: 2
+#     rke2_k8s_version: 1.26.0
+#     rke2_airgapped_installation: true
+#     rke2_release_kind: rke2r2 # rke2r1
+#     disable_rke2_components:
+#       - rke2-ingress-nginx
+#       - rke-snapshot-controller
+#     cluster_setup: multinode
+#     install_containerd: false # bring your own containerd
+#     containerdRootPath: /var/lib/containerd/ # directory must not exist
+
+#   roles:
+#     - role: deploy-configure-rke
