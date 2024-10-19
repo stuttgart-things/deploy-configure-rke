@@ -14,7 +14,7 @@ cluster_setup: multinode
 rke_installscript_url: https://get.rke2.io
 update_packages: true
 rke2_os_packages: curl
-rke2_cni: canal
+rke2_cni: cilium
 kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt

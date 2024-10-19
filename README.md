@@ -181,20 +181,34 @@ ansible-playbook -i inv play.yaml -vv
 
 ```bash
 cat <<EOF > ./play.yaml
-- hosts: all
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
   become: true
 
   vars:
+    rke_state: present #absent
     rke_version: 2
-    rke2_k8s_version: 1.26.0
+    rke2_k8s_version: 1.30.4
     rke2_airgapped_installation: true
-    rke2_release_kind: rke2r2 # rke2r1
+    rke2_release_kind: rke2r1 #rke2r2
+    rke2_cni: cilium
     disable_rke2_components:
       - rke2-ingress-nginx
       - rke-snapshot-controller
     cluster_setup: multinode
-    install_containerd: false # bring your own containerd
-    containerdRootPath: /var/lib/containerd/ # directory must not exist
+    rke2_cni: cilium
+    values_cilium: |
+      ---
+      eni:
+        enabled: true
+
+    helmChartConfig:
+      cilium:
+        name: rke2-cilium
+        namespace: kube-system
+        release_values: "{{ values_cilium }}"
 
   roles:
     - role: deploy-configure-rke
