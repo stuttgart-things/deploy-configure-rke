@@ -19,7 +19,7 @@ kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
 rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
-rke2_k8s_version: 1.23.6
+rke2_k8s_version: 1.30.4
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
@@ -38,7 +38,7 @@ rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
 rke2_fetched_kubeconfig_path: ./kubeconfig
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
-rke2_release_kind: rke2r2
+rke2_release_kind: rke2r1 #rke2r2
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: false
 rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
