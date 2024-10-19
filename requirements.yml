@@ -11,7 +11,7 @@ roles:
     version: 2024.05.11
   - src: https://github.com/stuttgart-things/download-install-binary.git
     scm: git
-    version: 2024.05.24
+    version: 2024.09.06
   - src: https://github.com/stuttgart-things/create-os-user.git
     scm: git
     version: 2024.04.25
