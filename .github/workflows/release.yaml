@@ -1,0 +1,26 @@
+---
+name: Release Ansible Module
+on:
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: release-tag
+        required: true
+        type: string
+      release-message:
+        description: release-message
+        required: true
+        type: string
+
+jobs:
+  release-ansible:
+    name: Release
+    uses: stuttgart-things/stuttgart-things/.github/workflows/call-release-module.yaml@main
+    with:
+      module-name: download-install-binary
+      tag-name: "${{ github.event.inputs.release-tag }}"
+      release-message: "${{ github.event.inputs.release-message }}"
+      environment-name: k8s
+      archive-kind: tar.gz
+      runs-on: ghr-deploy-configure-rke-skyami-cicd
+      continue-error: false
