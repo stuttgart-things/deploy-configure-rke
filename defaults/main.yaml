@@ -33,10 +33,10 @@ rke2_task_can_possibly_fail: "{{ true if inventory_hostname in groups['additiona
 rke2_user_group: root
 rke2_server_service: rke2-server.service
 rke2_node_register_port: 9345
-k8s_api_port: 6443s
+k8s_api_port: 6443
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
 rke2_fetched_kubeconfig_path: ./kubeconfig
-rke2_path_to_generated_token: "{{ rke_dir }}/node-token"
+rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
 rke2_release_kind: rke2r2
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
@@ -70,7 +70,7 @@ install_helm: true
 install_rke_installer: true
 
 
-kubectl_version: v1.31.0
+kubectl_version: v1.31.1
 helm_version: 3.16.2
 rke_installer_version: 1.4.8
 rke_kubernetes_version: v1.26.7-rancher1-1
@@ -244,4 +244,4 @@ helmChartConfig:
 values_cilium: |
   ---
   eni:
-    enabled: false
+    enabled: true
