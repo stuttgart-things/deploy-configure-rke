@@ -182,8 +182,7 @@ ansible-playbook -i inv play.yaml -vv
 ```bash
 cat <<EOF > ./play.yaml
 ---
-- name: Converge
-  hosts: all
+- hosts: all
   gather_facts: true
   become: true
 
