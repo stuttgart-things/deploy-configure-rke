@@ -64,7 +64,6 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 </details>
 
-
 <details><summary>UNINSTALL</summary>
 
 ```bash
@@ -263,13 +262,11 @@ cat <<EOF > ./play.yaml
   vars:
     install_k3s: true
     k3s_state: present
-    k3s_k8s_version: 1.21.1
+    k3s_k8s_version: 1.31.1
     k3s_release_kind: k3s1
     k3s_parameters:
       - "--write-kubeconfig-mode 644"
-    cluster_setup: multinode
-    install_containerd: false # bring your own containerd
-    containerdRootPath: /var/lib/containerd/ # only if install_containerd true
+    cluster_setup: singlenode
 
   roles:
     - role: deploy-configure-rke
