@@ -1,11 +1,24 @@
 ---
-- name: Set k3s parameters
-  ansible.builtin.set_fact:
-    k3s_params: "{{ k3s_parameters | join(' ') }}"
+- name: Download and install addons
+  ansible.builtin.include_tasks: install-addons.yaml
+
+- name: Create config dir
+  ansible.builtin.file:
+    path: "{{ k3s_config_dir }}"
+    state: directory
+    owner: "{{ rke2_user_name }}"
+    group: "{{ rke2_user_group }}"
+    mode: 0755
+  tags: rke2_config
+
+- name: Create k3s config
+  ansible.builtin.template:
+    src: "{{ k3s_config_template }}"
+    dest: "{{ k3s_config_dir }}/{{ k3s_config_name }}"
 
 - name: Install k3s-server service and the k3s binary
   ansible.builtin.shell: |
-    curl -sfL {{ k3s_installscript_url }} | sh -s - {{ k3s_params }}
+    curl -sfL {{ k3s_installscript_url }} | sh -s - --config={{ k3s_config_dir }}/{{ k3s_config_name }}
   environment:
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
   when: inventory_hostname in groups['initial_master_node']
@@ -36,3 +49,6 @@
   with_items:
     - "{{ k3s_additional_nodes }}"
   when: inventory_hostname in groups['initial_master_node']
+
+- name: Configure k3s cluster
+  ansible.builtin.include_tasks: configure-k3s.yaml

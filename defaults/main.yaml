@@ -69,7 +69,8 @@ install_kubectl: true
 install_helm: true
 install_rke_installer: true
 
-
+install_cilium: false
+cilium_version: 0.16.19
 kubectl_version: v1.31.1
 helm_version: 3.16.2
 rke_installer_version: 1.4.8
@@ -116,6 +117,18 @@ rke_installer_binary:
     to_remove: ""
     check_bin_version_before_installing: true
 
+cilium_binary:
+  cilium:
+    bin_name: cilium
+    bin_version: "{{ cilium_version }}"
+    check_bin_version_before_installing: true
+    source_url: "https://github.com/cilium/cilium-cli/releases/download/v{{ cilium_version }}/cilium-linux-amd64.tar.gz"
+    bin_to_copy: cilium
+    to_remove: ""
+    bin_dir: "/usr/bin/cilium"
+    version_cmd: "version"
+    target_version: "{{ cilium_version }}"
+
 helm_binary:
   helm:
     bin_name: "helm"
@@ -128,11 +141,9 @@ helm_binary:
     version_cmd: " version"
     target_version: "{{ helm_version }}"
 
+
 # k3s
 install_k3s: false
-k3s_parameters:
-  - "--write-kubeconfig-mode 644"
-
 k3s_state: absent
 k3s_installscript_url: https://get.k3s.io
 k3s_k8s_version: 1.24.13
@@ -143,7 +154,30 @@ k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansibl
 k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
 k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh
 k3s_agent_uninstall_script: /usr/local/bin/k3s-agent-uninstall.sh
+k3s_config_template: k3s-config.yaml.j2
+k3s_config_path: /tmp/k3s-cluster.yaml
+k3s_config_dir: /etc/rancher/k3s
+k3s_config_name: k3s-config.yaml
+k3s_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+k3s_config:
+  flannel_backend: none
+  disable_kube_proxy: true
+  disable_network_policy: true
+  cluster_init: true
+  disable:
+    - servicelb
+    - traefik
 
+cilium_api_server_ip: "{{ ansible_default_ipv4.address }}"
+cilium_api_server_port: 6443
+cilium_kube_proxy_replacement: true
+cilium_operator_replicas: 1
+
+create_root_cert: true
+root_cert_dir: /etc/rancher/k3s
+root_cert_subject: "/CN=stuttgart-things"
+root_ca: "{{ root_cert_dir }}/root-ca.pem"
+root_ca_key: "{{ root_cert_dir }}/root-ca-key.pem"
 # conatinerd
 install_containerd: false
 containerd_version: 1.7.1

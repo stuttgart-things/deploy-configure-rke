@@ -1,0 +1,30 @@
+---
+- name: Install cilium
+  ansible.builtin.shell: |
+    cilium install \
+      --set k8sServiceHost={{ cilium_api_server_ip }} \
+      --set k8sServicePort={{ cilium_api_server_port }} \
+      --set kubeProxyReplacement={{ cilium_kube_proxy_replacement }} \
+      --helm-set=operator.replicas={{ cilium_operator_replicas }}
+    cilium status --wait
+  environment:
+    KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Create (testing) root certificate
+  block:
+    - name: Generate self-signed certificate
+      ansible.builtin.shell: |
+        openssl genrsa -out {{ root_ca_key }} 2048
+        openssl req -x509 -new -nodes -key {{ root_ca_key }} \
+        -days 3650 -sha256 -out {{ root_ca }} -subj "{{ root_cert_subject }}"
+
+    - name: Create cert-manager namespace and secret
+      ansible.builtin.shell: |
+        kubectl create ns cert-manager
+        kubectl create secret tls -n cert-manager root-ca \
+        --cert={{ root_ca }} \
+        --key={{ root_ca_key }}
+      environment:
+        KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+  when: create_root_cert|bool and inventory_hostname in groups['initial_master_node']

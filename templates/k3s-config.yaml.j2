@@ -1,0 +1,9 @@
+---
+flannel-backend: {{ k3s_config.flannel_backend }}
+disable-kube-proxy: {{ k3s_config.disable_kube_proxy }}
+disable-network-policy: {{ k3s_config.disable_network_policy }}
+cluster-init: {{ k3s_config.cluster_init }}
+disable:
+{% for item in k3s_config.disable %}
+- {{ item }}
+{% endfor %}

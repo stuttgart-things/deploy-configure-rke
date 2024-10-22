@@ -12,13 +12,13 @@ driver:
   name: default
   managed: False
 platforms:
-  - name: rke2-test-molecule.labul.sva.de
+  - name: cluster-test1.labul.sva.de
 provisioner:
   name: ansible
   env:
     ANSIBLE_VERBOSITY: 3
   playbooks:
-    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+    converge: ${MOLECULE_PLAYBOOK:-k3s.yaml} #converge.yml
   inventory:
     links:
       hosts: inventory.yaml
@@ -26,13 +26,7 @@ provisioner:
 scenario:
   name: default
   test_sequence:
-    # - destroy
     - dependency
     - syntax
-    # - create
     - prepare
     - converge
-
-    # you might want to add your own variables here based on what provisioning
-    # you are doing like:
-    # image: quay.io/centos/centos:stream8
