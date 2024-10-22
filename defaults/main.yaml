@@ -174,7 +174,7 @@ cilium_kube_proxy_replacement: true
 cilium_operator_replicas: 1
 
 create_root_cert: true
-root_cert_dir: /etc/rancher/k3s/
+root_cert_dir: /etc/rancher/k3s
 root_cert_subject: "/CN=stuttgart-things"
 root_ca: "{{ root_cert_dir }}/root-ca.pem"
 root_ca_key: "{{ root_cert_dir }}/root-ca-key.pem"
