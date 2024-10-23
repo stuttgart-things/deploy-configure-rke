@@ -18,13 +18,15 @@
         openssl genrsa -out {{ root_ca_key }} 2048
         openssl req -x509 -new -nodes -key {{ root_ca_key }} \
         -days 3650 -sha256 -out {{ root_ca }} -subj "{{ root_cert_subject }}"
+        cp {{ root_ca }} {{ os_cert_path }}/k3s-ca.crt
+        update-ca-certificates
 
     - name: Create cert-manager namespace and secret
       ansible.builtin.shell: |
-        kubectl create ns cert-manager
+        kubectl create ns cert-manager || true
         kubectl create secret tls -n cert-manager root-ca \
-        --cert={{ root_ca }} \
-        --key={{ root_ca_key }}
+        --cert={{ root_ca }} --key={{ root_ca_key }} || true
       environment:
         KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+
   when: create_root_cert|bool and inventory_hostname in groups['initial_master_node']

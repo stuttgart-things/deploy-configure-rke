@@ -10,6 +10,9 @@ rke_docker_version: "{% if rke_docker_package_version == '23.0.6' and ansible_os
 rke_docker_ce_version: "{% if rke_docker_package_version == '23.0.6' and ansible_os_family == 'Debian' %}5:23.0.6*{% else %}{% endif %}"
 template_creation_setup: true
 cluster_setup: multinode
+
+fetch_kubeconfig: true
+
 # rke2
 rke_installscript_url: https://get.rke2.io
 update_packages: true
@@ -62,6 +65,7 @@ path_to_rke_cluster_config: "{{ rancher_cluster_folder }}/{{ rke_cluster_config_
 path_tls_crt: "{{ rancher_cluster_folder }}/tls.crt"
 path_tls_key: "{{ rancher_cluster_folder }}/tls.key"
 path_cacerts_pem: "{{ rancher_cluster_folder }}/cacerts.pem"
+rke2_kubeconfig_path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
 
 path_to_rke_installer_binary: /usr/bin/rke
 path_to_kubectl_binary: /usr/bin/kubectl
@@ -159,6 +163,8 @@ k3s_config_path: /tmp/k3s-cluster.yaml
 k3s_config_dir: /etc/rancher/k3s
 k3s_config_name: k3s-config.yaml
 k3s_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+
+helm_kubeconfig: "{{ k3s_kubeconfig_path if install_k3s|bool else rke2_kubeconfig_path }}"
 k3s_config:
   flannel_backend: none
   disable_kube_proxy: true
@@ -174,6 +180,7 @@ cilium_kube_proxy_replacement: true
 cilium_operator_replicas: 1
 
 create_root_cert: true
+os_cert_path: /usr/local/share/ca-certificates
 root_cert_dir: /etc/rancher/k3s
 root_cert_subject: "/CN=stuttgart-things"
 root_ca: "{{ root_cert_dir }}/root-ca.pem"

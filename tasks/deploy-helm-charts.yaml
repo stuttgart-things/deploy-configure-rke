@@ -5,14 +5,15 @@
     repo_url: "{{ item.value.url }}"
     force_update: true
   loop: "{{ q('ansible.builtin.dict', helm_repositories) }}"
-  when: helm_repositories is defined
+  when: inventory_hostname in groups['initial_master_node'] and helm_repositories is defined
 
 - name: Install Helm Diff
   kubernetes.core.helm_plugin:
     plugin_path: "https://github.com/databus23/helm-diff"
     state: present
+  when: inventory_hostname in groups['initial_master_node']
 
-- name: Deploy helm charts 
+- name: Deploy helm charts
   kubernetes.core.helm:
     kubeconfig: "{{ helm_kubeconfig }}"
     name: "{{ item.key }}"
@@ -21,16 +22,16 @@
     release_namespace: "{{ item.value.namespace }}"
     create_namespace: true
     state: "{{ helm_state }}"
-    values: "{{ helm_values | default(omit) }}"
+    values: "{{ lookup('template', 'helm-values.yaml.j2') | from_yaml }}"
     wait: "{{ item.values.wait | default(omit) }}"
   loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
-  when: helm_releases is defined
+  when: inventory_hostname in groups['initial_master_node'] and helm_releases is defined
   ignore_errors: "{{ item.value.ignore | default(omit) }}"
-  
+
 - name: Deploy additional manifests
   kubernetes.core.k8s:
     kubeconfig: "{{ helm_kubeconfig }}"
     state: present
     definition: "{{ lookup('template', 'manifest-file.yaml.j2') | from_yaml }}"
   loop: "{{ q('ansible.builtin.dict', additional_helm_manifests) }}"
-  when: additional_helm_manifests is defined
+  when: inventory_hostname in groups['initial_master_node'] and additional_helm_manifests is defined

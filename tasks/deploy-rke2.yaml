@@ -41,11 +41,11 @@
 
 - name: Fetch kubeconfig local to ansible host
   ansible.builtin.fetch:
-    src: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
+    src: "{{ rke2_kubeconfig_path }}"
     dest: "{{ rke2_fetched_kubeconfig_path }}"
     flat: yes
     run_once: true
-  when: inventory_hostname in groups['initial_master_node']
+  when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig|bool
 
 - name: Add alias for crictl to nodes
   lineinfile:
