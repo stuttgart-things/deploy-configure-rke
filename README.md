@@ -19,6 +19,7 @@ task: Available tasks for this project:
 ```bash
 task setup-venv
 source ./.venv/bin/activate
+task setup-molecule
 task run-molecule
 ```
 

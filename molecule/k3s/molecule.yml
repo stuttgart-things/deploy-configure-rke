@@ -24,7 +24,7 @@ provisioner:
       hosts: inventory.yaml
 
 scenario:
-  name: default
+  name: k3s
   test_sequence:
     - dependency
     - syntax
