@@ -39,14 +39,6 @@
   ansible.builtin.include_tasks: start-rke2.yaml
   when: inventory_hostname in groups['additional_master_nodes'] and cluster_setup != 'singlenode'
 
-- name: Fetch kubeconfig local to ansible host
-  ansible.builtin.fetch:
-    src: "{{ rke2_kubeconfig_path }}"
-    dest: "{{ rke2_fetched_kubeconfig_path }}"
-    flat: yes
-    run_once: true
-  when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig|bool
-
 - name: Add alias for crictl to nodes
   lineinfile:
     path: ~/.bashrc
