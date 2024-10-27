@@ -294,12 +294,11 @@ cat <<EOF > ./play.yaml
 
   vars:
     install_k3s: true
-    k3s_state: present
+    k3s_state: present #absent
     k3s_k8s_version: 1.31.1
     k3s_release_kind: k3s1
-    k3s_parameters:
-      - "--write-kubeconfig-mode 644"
     cluster_setup: singlenode
+    install_cillium: true
 
   roles:
     - role: deploy-configure-rke
@@ -309,6 +308,75 @@ ansible-playbook -i inv play.yaml -vv
 ```
 
 </details>
+
+<details><summary>EXAMPLE K3S PLAYBOOK w/ ADDONS</summary>
+
+```bash
+cat <<EOF > ./play.yaml
+- hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: present #absent
+    k3s_k8s_version: 1.31.1
+    k3s_release_kind: k3s1
+    cluster_setup: singlenode
+    install_cillium: true
+    deploy_helm_charts: true
+    helm_repositories:
+      ingress-nginx:
+        url: https://kubernetes.github.io/ingress-nginx
+      cert-manager:
+        url: https://charts.jetstack.io
+
+    helm_releases:
+      ingress-nginx:
+        ref: ingress-nginx/ingress-nginx
+        version: 4.11.3
+        namespace: ingress-nginx
+        ignore: false
+        wait: true
+        helm_values: |
+          controller:
+            hostNetwork: true
+            service:
+              type: ClusterIP
+
+      cert-manager:
+        ref: cert-manager/cert-manager
+        version: v1.16.1
+        namespace: cert-manager
+        ignore: false
+        wait: true
+        helm_values: |
+          crds:
+            enabled: true
+
+    additional_helm_manifests:
+      cluster_issuer:
+        manifest: |
+          apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: ca-issuer
+          spec:
+            ca:
+              secretName: root-ca
+
+  roles:
+    - role: deploy-configure-rke
+EOF
+
+ansible-playbook -i inv play.yaml -vv
+```
+
+</details>
+
+
+
+
 
 <details><summary>EXAMPLE EXECUTION</summary>
 
