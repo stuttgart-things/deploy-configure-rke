@@ -57,4 +57,6 @@
 
 - name: Deploy helm charts
   ansible.builtin.include_tasks: deploy-helm-charts.yaml
-  when: deploy_helm_charts|bool
+  when: 
+    - deploy_helm_charts | bool
+    - (k3s_state == "absent" or rke2_state == "present")
