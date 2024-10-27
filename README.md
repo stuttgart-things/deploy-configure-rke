@@ -23,7 +23,8 @@ task: Available tasks for this project:
 task setup-venv
 source ./.venv/bin/activate
 task setup-molecule
-task run-molecule
+scenario=rke2 task run-molecule
+# scenario=k3s task run-molecule
 ```
 
 </details>
@@ -46,11 +47,12 @@ https://github.com/stuttgart-things/deploy-configure-rke/releases/download/${VER
 
 ```bash
 # CREATE INVENTORY
-cat <<EOF > rke2
-[initial_master_node]
-10.100.136.151
-[additional_master_nodes]
-# no details needed but group needs to be defined
+cat <<EOF > rke2.yaml
+---
+initial_master_node:
+  hosts:
+    10.100.136.150
+additional_master_nodes:
 EOF
 
 # PLAYBOOK CALL
@@ -58,7 +60,7 @@ CLUSTER_NAME=rke2
 mkdir ~/.kube/
 
 ansible-playbook sthings.deploy_rke.rke2 \
--i rke2 -vv \
+-i rke2.yaml -vv \
 -e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
 -e cluster_setup=singlenode \
 -vv
@@ -70,12 +72,14 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 ```bash
 # CREATE INVENTORY
-cat <<EOF > rke2
-[initial_master_node]
-10.100.136.151
-[additional_master_nodes]
-10.100.136.152
-10.100.136.153
+cat <<EOF > rke2.yaml
+initial_master_node:
+  hosts:
+    10.100.136.150
+additional_master_nodes:
+  hosts:
+    10.100.136.151
+    10.100.136.152
 EOF
 
 # PLAYBOOK CALL
@@ -83,7 +87,7 @@ CLUSTER_NAME=rke2
 mkdir ~/.kube/${CLUSTER_NAME}
 
 ansible-playbook sthings.deploy_rke.rke2 \
--i rke2 -vv \
+-i rke2.yaml -vv \
 -e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
 -e cluster_setup=multinode \
 -vv
@@ -95,12 +99,14 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 ```bash
 # CREATE INVENTORY
-cat <<EOF > rke2
-[initial_master_node]
-10.100.136.151
-[additional_master_nodes]
-10.100.136.152
-10.100.136.153
+cat <<EOF > rke2.yaml
+initial_master_node:
+  hosts:
+    10.100.136.150
+additional_master_nodes:
+  hosts:
+    10.100.136.151
+    10.100.136.152
 EOF
 
 # PLAYBOOK CALL
@@ -108,7 +114,7 @@ CLUSTER_NAME=rke2
 mkdir ~/.kube/${CLUSTER_NAME}
 
 ansible-playbook sthings.deploy_rke.rke2 \
--i rke2 -vv \
+-i rke2.yaml -vv \
 -e rke2_fetched_kubeconfig_path=~/.kube/${CLUSTER_NAME} \
 -e cluster_setup=multinode \
 -e rke_state: absent \
