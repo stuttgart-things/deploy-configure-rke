@@ -5,7 +5,7 @@
   become: true
 
   vars:
-    rke_state: present #absent
+    rke_state: present #absent #present #absent #present  #present #absent
     rke_version: 2
     rke2_k8s_version: 1.30.4
     rke2_airgapped_installation: true

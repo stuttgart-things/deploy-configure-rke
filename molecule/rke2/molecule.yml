@@ -12,11 +12,11 @@ driver:
   name: default
   managed: False
 platforms:
-  - name: cluster-test1.labul.sva.de
+  - name: cluster-test1-2.labul.sva.de
 provisioner:
   name: ansible
   env:
-    ANSIBLE_VERBOSITY: 3
+    ANSIBLE_VERBOSITY: 1
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-rke2.yaml} #converge.yml
   inventory:
