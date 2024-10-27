@@ -178,6 +178,9 @@ cilium_api_server_ip: "{{ ansible_default_ipv4.address }}"
 cilium_api_server_port: 6443
 cilium_kube_proxy_replacement: true
 cilium_operator_replicas: 1
+cilium_enable_ingress: false
+cilium_rollout_pods: true
+cilium_config: cilium.yaml
 
 create_root_cert: true
 os_cert_path: /usr/local/share/ca-certificates

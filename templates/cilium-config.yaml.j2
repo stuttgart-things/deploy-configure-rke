@@ -1,0 +1,23 @@
+---
+k8sServiceHost: {{ cilium_api_server_ip }}
+k8sServicePort: {{ cilium_api_server_port }}
+kubeProxyReplacement: {{ cilium_kube_proxy_replacement }} 
+
+l2announcements:
+  enabled: true
+
+externalIPs:
+  enabled: true
+
+k8sClientRateLimit:
+  qps: 50
+  burst: 200
+
+operator:
+  replicas: {{ cilium_operator_replicas }}
+  rollOutPods: {{ cilium_rollout_pods }}
+
+rollOutCiliumPods: {{ cilium_rollout_pods }}
+
+ingressController:
+  enabled: {{ cilium_enable_ingress }} 
