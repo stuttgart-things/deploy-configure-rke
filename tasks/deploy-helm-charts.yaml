@@ -15,7 +15,7 @@
 
 - name: Deploy helm charts
   kubernetes.core.helm:
-    kubeconfig: "{{ helm_kubeconfig }}"
+    kubeconfig: "{{ path_to_kubeconfig }}"
     name: "{{ item.key }}"
     chart_ref: "{{ item.value.ref }}"
     chart_version: "{{ item.value.version | default('latest') }}"
@@ -30,7 +30,7 @@
 
 - name: Deploy additional manifests
   kubernetes.core.k8s:
-    kubeconfig: "{{ helm_kubeconfig }}"
+    kubeconfig: "{{ path_to_kubeconfig }}"
     state: present
     definition: "{{ lookup('template', 'manifest-file.yaml.j2') | from_yaml }}"
   loop: "{{ q('ansible.builtin.dict', additional_helm_manifests) }}"

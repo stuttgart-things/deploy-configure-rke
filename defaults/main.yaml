@@ -38,7 +38,7 @@ rke2_server_service: rke2-server.service
 rke2_node_register_port: 9345
 k8s_api_port: 6443
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
-rke2_fetched_kubeconfig_path: ./kubeconfig
+fetched_kubeconfig_path: ./kubeconfig
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
 rke2_release_kind: rke2r1 #rke2r2
@@ -164,7 +164,7 @@ k3s_config_dir: /etc/rancher/k3s
 k3s_config_name: k3s-config.yaml
 k3s_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
 
-helm_kubeconfig: "{{ k3s_kubeconfig_path if install_k3s|bool else rke2_kubeconfig_path }}"
+path_to_kubeconfig: "{{ k3s_kubeconfig_path if install_k3s|bool else rke2_kubeconfig_path }}"
 k3s_config:
   flannel_backend: none
   disable_kube_proxy: true
