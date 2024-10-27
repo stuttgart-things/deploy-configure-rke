@@ -43,9 +43,13 @@
   ansible.builtin.include_tasks: deploy-k3s.yaml
   when: install_k3s|bool and k3s_state == "present"
 
-- name: Upgrade rke1
-  ansible.builtin.include_tasks: upgrade-rke1.yaml
-  when: operation == "upgrade" and rke_version == 1 and rke_state == "present" and not install_k3s
+- name: Fetch kubeconfig local to ansible host
+  ansible.builtin.fetch:
+    src: "{{ rke2_kubeconfig_path }}"
+    dest: "{{ rke2_fetched_kubeconfig_path }}"
+    flat: yes
+    run_once: true
+  when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig|bool
 
 - name: Remove rke2
   ansible.builtin.include_tasks: remove-rke2.yaml
