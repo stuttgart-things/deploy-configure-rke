@@ -6,17 +6,20 @@ deploy rancher kubernetes engine + configuration in version 1/2 on linux based s
 
 <details><summary>TASKS</summary>
 
+```bash
 task: Available tasks for this project:
 * branch:           Create branch from main
 * commit:           Commit + push code into branch
 * pr:               Create pull request into main
 * setup-venv:       Setup python virtual environment
+```
 
 </details>
 
 <details><summary>TEST w/ MOLECULE</summary>
 
 ```bash
+# UPDATE INVENTORY + PLATFORMS NAME
 task setup-venv
 source ./.venv/bin/activate
 task setup-molecule
