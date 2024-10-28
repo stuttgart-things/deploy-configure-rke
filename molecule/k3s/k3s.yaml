@@ -6,12 +6,14 @@
 
   vars:
     install_k3s: true
-    k3s_state: present #absent
+    k3s_state: present #absent #present #absent
     k3s_k8s_version: 1.31.1
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true
     deploy_helm_charts: true
+    fetched_kubeconfig_path: kubeconfig
+
     helm_repositories:
       ingress-nginx:
         url: https://kubernetes.github.io/ingress-nginx
@@ -30,7 +32,7 @@
             hostNetwork: true
             service:
               type: ClusterIP
-              
+
       cert-manager:
         ref: cert-manager/cert-manager
         version: v1.16.1
@@ -41,7 +43,7 @@
           crds:
             enabled: true
 
-    additional_helm_manifests:
+    manifests:
       cluster_issuer:
         manifest: |
           apiVersion: cert-manager.io/v1
@@ -51,6 +53,29 @@
           spec:
             ca:
               secretName: root-ca
+
+      lb_pool:
+        manifest: |
+          apiVersion: cilium.io/v2alpha1
+          kind: CiliumLoadBalancerIPPool
+          metadata:
+            name: first-pool
+          spec:
+            blocks:
+              - start: 10.31.103.11
+                stop: 10.31.103.12
+
+      announcement_policy:
+        manifest: |
+          ---
+          apiVersion: cilium.io/v2alpha1
+          kind: CiliumL2AnnouncementPolicy
+          metadata:
+            name: default-l2-announcement-policy
+            namespace: kube-system
+          spec:
+            externalIPs: true
+            loadBalancerIPs: true
 
   roles:
     - role: deploy-configure-rke
