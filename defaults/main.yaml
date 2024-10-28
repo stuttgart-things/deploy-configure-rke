@@ -73,7 +73,7 @@ install_kubectl: true
 install_helm: true
 install_rke_installer: true
 
-install_cilium: false
+install_cilium: true
 cilium_version: 0.16.19
 kubectl_version: v1.31.1
 helm_version: 3.16.2
@@ -164,7 +164,7 @@ k3s_config_dir: /etc/rancher/k3s
 k3s_config_name: k3s-config.yaml
 k3s_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
 
-path_to_kubeconfig: "{{ k3s_kubeconfig_path if install_k3s|bool else rke2_kubeconfig_path }}"
+kubeconfig_path: "{{ k3s_kubeconfig_path if install_k3s|bool else rke2_kubeconfig_path }}"
 k3s_config:
   flannel_backend: none
   disable_kube_proxy: true
@@ -202,7 +202,6 @@ containerd_service_url: https://raw.githubusercontent.com/containerd/containerd/
 containerd_service_dest: /usr/lib/systemd/system/
 containerd_service_name: containerd.service
 containerd_config_folder: /etc/containerd
-containerd_importer_script: containerd-importer.sh
 containerd_config_file: config.toml
 runc_install_url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64"
 runc_bin_dest: /usr/local/sbin/

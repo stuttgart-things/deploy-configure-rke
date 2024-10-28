@@ -32,7 +32,7 @@
         url: "{{ rke2_airgapped_image_url }}"
         dest: "{{ rke2_airgapped_install_dir }}/{{ rke2_airgapped_archive }}"
         validate_certs: "{{ validate_certs }}"
-        
+
   when: rke2_airgapped_installation|bool and not install_k3s
 
 - name: Deploy rke{{ rke_version }}
@@ -45,7 +45,7 @@
 
 - name: Fetch kubeconfig local to ansible host
   ansible.builtin.fetch:
-    src: "{{ path_to_kubeconfig }}"
+    src: "{{ kubeconfig_path }}"
     dest: "{{ fetched_kubeconfig_path }}"
     flat: yes
     run_once: true
@@ -61,6 +61,7 @@
 
 - name: Deploy helm charts
   ansible.builtin.include_tasks: deploy-helm-charts.yaml
-  when: 
+  when:
     - deploy_helm_charts | bool
-    - (k3s_state == "present" or rke2_state == "present")
+    - k3s_state != "absent"
+    - rke_state != "absent"

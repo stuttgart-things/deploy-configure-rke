@@ -16,7 +16,7 @@ platforms:
 provisioner:
   name: ansible
   env:
-    ANSIBLE_VERBOSITY: 3
+    ANSIBLE_VERBOSITY: 1
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-k3s.yaml} #converge.yml
   inventory:
