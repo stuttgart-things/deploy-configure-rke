@@ -221,7 +221,7 @@ cat <<EOF > ./play.yaml
   vars:
     rke_state: present #absent
     rke_version: 2
-    rke2_k8s_version: 1.30.4
+    rke2_k8s_version: 1.33.1
     rke2_airgapped_installation: true
     rke2_release_kind: rke2r1 #rke2r2
     rke2_cni: cilium
