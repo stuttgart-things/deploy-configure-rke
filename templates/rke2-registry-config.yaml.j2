@@ -1,8 +1,21 @@
 ---
-{% if 'rke2_registry_configs' is defined %}{% for registry_config in rke2_registry_configs.values() %}
+{% if rke2_registry_configs is defined %}
 configs:
-  {{ registry_config.name }}:
+{% for cfg in rke2_registry_configs.values() %}
+  {{ cfg.name }}:
     auth:
-      username: {{ registry_config.username }}
-      password: {{ registry_config.password }}
-{% endfor %}{% endif %}
+      username: {{ cfg.username }}
+      password: {{ cfg.password }}
+{% endfor %}
+{% endif %}
+
+{% if rke2_registry_mirrors is defined %}
+mirrors:
+{% for mirror in rke2_registry_mirrors %}
+  "{{ mirror.name }}":
+    endpoint:
+{% for ep in mirror.endpoints %}
+      - "{{ ep }}"
+{% endfor %}
+{% endfor %}
+{% endif %}
