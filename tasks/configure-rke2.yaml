@@ -24,7 +24,7 @@
 
 - name: Create registry config
   ansible.builtin.include_tasks: configure-registries.yaml
-  when: rke2_registry_configs is defined
+  when: rke2_registry_configs is defined or rke2_registry_mirrors is defined
 
 - name: Create manifest dir
   ansible.builtin.file:

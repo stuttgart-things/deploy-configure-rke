@@ -42,9 +42,9 @@
     path: "{{ containerd_service_dest }}/{{ containerd_service_name }}"
     insertafter: "KillMode=process"
     block: |
-      {{ containerd_proxy_config }} 
+      {{ containerd_proxy_config }}
   when: rke2_configure_proxy|bool
-  
+
 - name: Enable and restart containerd service
   ansible.builtin.systemd:
     state: started
@@ -60,7 +60,7 @@
 
 - name: Import rke2 images into conatinerd
   block:
-  
+
     - name: Download imagelist for rke2 release
       ansible.builtin.get_url:
         url: "{{ rke2_imagelist_url }}"
@@ -74,5 +74,5 @@
     - name: Download and import images into containerd
       ansible.builtin.shell: |
         sh {{ rke2_config_dir }}/{{ containerd_importer_script }}
-        
+
   when: conatinerd_import_rke2images|bool

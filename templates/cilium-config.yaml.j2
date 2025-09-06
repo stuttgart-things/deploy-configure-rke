@@ -1,7 +1,7 @@
 ---
 k8sServiceHost: {{ cilium_api_server_ip }}
 k8sServicePort: {{ cilium_api_server_port }}
-kubeProxyReplacement: {{ cilium_kube_proxy_replacement }} 
+kubeProxyReplacement: {{ cilium_kube_proxy_replacement }}
 
 l2announcements:
   enabled: true
@@ -20,4 +20,4 @@ operator:
 rollOutCiliumPods: {{ cilium_rollout_pods }}
 
 ingressController:
-  enabled: {{ cilium_enable_ingress }} 
+  enabled: {{ cilium_enable_ingress }}

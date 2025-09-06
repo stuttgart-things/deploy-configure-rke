@@ -41,7 +41,7 @@
     line: "    server: https://{% for host in groups['initial_master_node'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% endfor %}:{{ k8s_api_port }}"
   when: inventory_hostname in groups['initial_master_node']
   ignore_errors: true
-  
+
 - name: Deploy additional nodes
   ansible.builtin.shell: |
     curl -sfL {{ k3s_installscript_url }} | sh -s -

@@ -2,7 +2,7 @@
 - name: Check for existing of cluster-config and cluster state files
   ansible.builtin.stat:
     path: "{{ item }}"
-  loop: 
+  loop:
     - "{{ path_to_rke_statefile }}"
     - "{{ path_to_rke_cluster_config }}"
     - "{{ path_to_kubeconfig }}"
@@ -15,12 +15,12 @@
     {{ path_to_rke_installer_binary }} config --list-version --all | grep '{{ rke_upgrade_version }}'
   register: rke_installer_available_versions
 
-- name: Check for version in cluster-config file 
+- name: Check for version in cluster-config file
   ansible.builtin.shell: |
     cat {{ rancher_cluster_folder }}/{{ rke_cluster_config_name }} | awk '/kubernetes_version:/ {print $2}'
   register: rke_version_cluster_config
 
-- name: Check for installed k8s version on rancher-ha-server 
+- name: Check for installed k8s version on rancher-ha-server
   ansible.builtin.shell: |
     {{ path_to_kubectl_binary }} --kubeconfig={{ path_to_kubeconfig }} version --short | grep 'Server' | awk '{print $3}'
   register: k8s_version_installed
@@ -41,7 +41,7 @@
     chdir: "{{ rancher_cluster_folder }}"
   when: rke_upgrade_version.split("-")[0] != k8s_version_installed.stdout.split("-")[0]
 
-- name: Check for installed k8s version on rancher-ha-server after upgrade process 
+- name: Check for installed k8s version on rancher-ha-server after upgrade process
   ansible.builtin.shell: |
     {{ path_to_kubectl_binary }} --kubeconfig={{ path_to_kubeconfig }} version --short | grep 'Server' | awk '{print $3}'
   register: k8s_version_upgraded

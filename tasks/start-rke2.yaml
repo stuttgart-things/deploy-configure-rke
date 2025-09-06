@@ -1,5 +1,5 @@
 ---
-- name: Create rke2 resources 
+- name: Create rke2 resources
   ansible.builtin.include_tasks: configure-rke2.yaml
 
 - name: Enable and start rke2 server service (for installing)
@@ -9,7 +9,7 @@
     state: started
     daemon_reload: yes
   ignore_errors: "{{ rke2_task_can_possibly_fail }}"
-  
+
 - name: Add external ip to kubeconfig
   ansible.builtin.lineinfile:
     path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
@@ -17,7 +17,7 @@
     line: "    server: https://{% for host in groups['initial_master_node'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% endfor %}:{{ k8s_api_port }}"
 
 - name: Test if rke2 server is successfully deployed
-  ansible.builtin.shell: | 
+  ansible.builtin.shell: |
     kubectl get nodes --kubeconfig {{ rke2_kubeconfig_name }}
   args:
     chdir: "{{ rke2_config_dir }}"

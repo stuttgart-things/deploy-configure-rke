@@ -19,11 +19,11 @@ while read i; do
   echo Importing "$i"
 
   sudo {{ containerd_cli }} -n=k8s.io image import $(echo $i | cut -d'/' -f 2)-$imagename-$tag.tar
-  
+
   echo Removing tarfile for "$i"
 
   sudo rm -rf $(echo $i | cut -d'/' -f 2)-$imagename-$tag.tar
-  
+
 done <${FILES}
 
 sudo {{ containerd_cli }} --namespace k8s.io images ls

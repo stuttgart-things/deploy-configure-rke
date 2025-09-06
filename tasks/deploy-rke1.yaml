@@ -2,10 +2,10 @@
 - name: Download and install addons
   ansible.builtin.include_tasks: install-addons.yaml
 
-- name: Check if rancher key-pair does already exist 
+- name: Check if rancher key-pair does already exist
   ansible.builtin.stat:
     path: "{{ path_to_private_key }}"
-  register: keypair_exists 
+  register: keypair_exists
   tags: keysetup
   when: inventory_hostname in groups['initial_master_node']
 
@@ -19,9 +19,9 @@
   when: inventory_hostname in groups['initial_master_node']
   tags: keysetup
 
-- name: Read pub key 
+- name: Read pub key
   block:
-    
+
     - name: Read pub key from inital master
       ansible.builtin.shell: cat {{ path_to_private_key }}.pub
       register: pub_key
@@ -39,14 +39,14 @@
   vars:
     users: "{{ rke_user }}"
 
-- name: Create rancher cluster folder 
+- name: Create rancher cluster folder
   ansible.builtin.file:
     path: "{{ rancher_cluster_folder }}"
     state: directory
     mode: '0755'
   tags: setup
   when: inventory_hostname in groups['initial_master_node']
-  
+
 - name: Create rancher cluster config
   ansible.builtin.template:
     src: rke1-config.yaml.j2
@@ -80,7 +80,7 @@
   register: rke_setup
   when: inventory_hostname in groups['initial_master_node'] and rke_setup.rc != 0
 
-- name: Change permission for files in rancher cluster folder 
+- name: Change permission for files in rancher cluster folder
   ansible.builtin.file:
     path: "{{ rancher_cluster_folder }}"
     state: directory
@@ -88,12 +88,11 @@
     owner: "{{ rke_user_name }}"
     group: "{{ rke_user_name }}"
   when: inventory_hostname in groups['initial_master_node']
-  
+
 - name: Fetch kubeconfig to ansible host
   ansible.builtin.fetch:
-    src: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml" 
+    src: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
     dest: "/tmp/kubeconfig"
     flat: yes
     run_once: true
   when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig_local|bool
-  

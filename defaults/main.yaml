@@ -22,7 +22,7 @@ kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
 rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
-rke2_k8s_version: 1.33.1
+rke2_k8s_version: 1.33.4
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
@@ -207,7 +207,6 @@ runc_install_url: "https://github.com/opencontainers/runc/releases/download/v{{ 
 runc_bin_dest: /usr/local/sbin/
 cni_install_url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz"
 cni_install_dest: /opt/cni/bin
-rke2_config_dir: /etc/rancher/rke2
 rke2_config_file: config.yaml
 regexBinDir: '^(\s*)bin_dir =.*'
 replaceBinDir: '\1bin_dir = "/var/lib/rancher/rke2/bin/"'

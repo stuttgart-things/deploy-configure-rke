@@ -4,7 +4,7 @@
     name: "{{ rke2_server_service }}"
     enabled: no
     state: stopped
-  ignore_errors: true 
+  ignore_errors: true
 
 - name: Uninstall rke2-server
   ansible.builtin.shell: |
