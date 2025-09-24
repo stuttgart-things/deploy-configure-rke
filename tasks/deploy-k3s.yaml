@@ -53,7 +53,9 @@
 
 - name: Label worker nodes
   ansible.builtin.shell: |
-    /usr/local/bin/kubectl label node {{ item }} node-role.kubernetes.io/worker=worker --overwrite
+    kubectl label node {{ item }} node-role.kubernetes.io/worker=worker --overwrite
+  environment:
+    KUBECONFIG: "{{ k3s_kubeconfig_path }}"
   with_items:
     - "{{ k3s_additional_nodes }}"
   when: inventory_hostname in groups['initial_master_node']

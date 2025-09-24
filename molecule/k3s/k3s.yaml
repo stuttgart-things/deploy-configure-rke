@@ -9,7 +9,7 @@
     k3s_state: present #absent #present #absent
     k3s_k8s_version: 1.33.4
     k3s_release_kind: k3s1
-    cluster_setup: singlenode
+    cluster_setup: multinode
     install_cillium: true
     deploy_helm_charts: true
     fetched_kubeconfig_path: kubeconfig
@@ -62,8 +62,8 @@
             name: first-pool
           spec:
             blocks:
-              - start: 10.100.136.225
-                stop: 10.100.136.226
+              - start: 10.100.136.227
+                stop: 10.100.136.228
 
       announcement_policy:
         manifest: |

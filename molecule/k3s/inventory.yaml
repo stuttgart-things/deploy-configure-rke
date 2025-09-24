@@ -2,8 +2,11 @@
 #singlecluster
 initial_master_node:
   hosts:
-    10.100.136.138
+    10.100.136.130
 additional_master_nodes:
+  hosts:
+    10.100.136.91:
+    10.100.136.92:
 
 #multicluster
 # initial_master_node:
