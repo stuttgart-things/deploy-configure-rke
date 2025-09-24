@@ -2,7 +2,7 @@
 #singlecluster
 initial_master_node:
   hosts:
-    cluster-test1.labul.sva.de
+    10.100.136.138
 additional_master_nodes:
 
 #multicluster

@@ -7,7 +7,7 @@
   vars:
     install_k3s: true
     k3s_state: present #absent #present #absent
-    k3s_k8s_version: 1.31.1
+    k3s_k8s_version: 1.33.4
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true
@@ -62,8 +62,8 @@
             name: first-pool
           spec:
             blocks:
-              - start: 10.31.103.11
-                stop: 10.31.103.12
+              - start: 10.100.136.225
+                stop: 10.100.136.226
 
       announcement_policy:
         manifest: |

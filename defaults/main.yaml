@@ -74,15 +74,10 @@ install_helm: true
 install_rke_installer: true
 
 install_cilium: true
-cilium_version: 0.16.19
-kubectl_version: v1.31.1
-helm_version: 3.16.2
-rke_installer_version: 1.4.8
-rke_kubernetes_version: v1.26.7-rancher1-1
+cilium_version: 0.18.2
+kubectl_version: v1.33.1
+helm_version: 3.19.0
 
-admin_group: "{% if ansible_os_family == 'RedHat' %}wheel{% else %}sudo{% endif %}"
-rke_user_name: rke
-additional_group: "{{ rke_user_name }}, docker"
 rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
 rancher_cluster_name: rancher-things
 network_plugin: canal
