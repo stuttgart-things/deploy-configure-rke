@@ -65,3 +65,7 @@
     - deploy_helm_charts | bool
     - k3s_state != "absent"
     - rke_state != "absent"
+
+- name: Deploy additional manifests
+  ansible.builtin.include_tasks: deploy-additional-manifests.yaml
+  when: manifests is defined

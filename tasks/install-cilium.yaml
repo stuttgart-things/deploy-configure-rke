@@ -23,3 +23,4 @@
     cilium status --wait
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  when: inventory_hostname in groups['initial_master_node']
