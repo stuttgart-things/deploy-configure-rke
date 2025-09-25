@@ -19,6 +19,7 @@
     rke2_cni: none
     install_cilium: true
 
+    deploy_helm_charts: true
     manifests:
       lb_pool:
         manifest: |
