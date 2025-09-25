@@ -54,10 +54,6 @@ rke2_server_service_dir: /usr/local/lib/systemd/system
 rke2_server_service_env_config: rke2-server.env
 rke2_configure_proxy: false
 
-operation: deploy
-rke_parameter: up
-rke_statefile_name: rancher-cluster.rkestate
-rke_cluster_config_name: rancher-cluster.yml
 fetch_kubeconfig_local: true
 path_to_kubeconfig: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
 path_to_rke_statefile: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
@@ -272,13 +268,14 @@ helm_state: present
 
 rke2_config: rke2-config.yaml.j2
 helm_template: helm-chart-config.yaml.j2
-helmChartConfig:
-  cilium:
-    name: rke2-cilium
-    namespace: kube-system
-    release_values: "{{ values_cilium }}"
 
-values_cilium: |
-  ---
-  eni:
-    enabled: true
+# helmChartConfig:
+#   cilium:
+#     name: rke2-cilium
+#     namespace: kube-system
+#     release_values: "{{ values_cilium }}"
+
+# values_cilium: |
+#   ---
+#   eni:
+#     enabled: true

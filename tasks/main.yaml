@@ -33,11 +33,11 @@
         dest: "{{ rke2_airgapped_install_dir }}/{{ rke2_airgapped_archive }}"
         validate_certs: "{{ validate_certs }}"
 
-  when: rke2_airgapped_installation|bool and not install_k3s
+  when: rke2_airgapped_installation|bool and not install_k3s and rke_state == "present"
 
 - name: Deploy rke{{ rke_version }}
   ansible.builtin.include_tasks: "deploy-rke{{ rke_version }}.yaml"
-  when: operation == "deploy" and rke_state == "present" and not install_k3s
+  when: rke_state == "present" and not install_k3s
 
 - name: Deploy k3s
   ansible.builtin.include_tasks: deploy-k3s.yaml

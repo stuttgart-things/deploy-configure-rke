@@ -5,9 +5,10 @@
   become: true
 
   vars:
-    rke_state: absent #present #absent #present  #present #absent
+    rke_state: present #absent
     rke_version: 2
     rke2_k8s_version: 1.33.4
+    prepare_rancher_ha_nodes: false #true
     rke2_airgapped_installation: true
     rke2_release_kind: rke2r1 # rke2r2
     cluster_setup: multinode
@@ -17,6 +18,30 @@
       - rke2-kube-proxy
     rke2_cni: none
     install_cilium: true
+
+    manifests:
+      lb_pool:
+        manifest: |
+          apiVersion: cilium.io/v2alpha1
+          kind: CiliumLoadBalancerIPPool
+          metadata:
+            name: first-pool
+          spec:
+            blocks:
+              - start: 10.100.136.227
+                stop: 10.100.136.228
+
+      announcement_policy:
+        manifest: |
+          ---
+          apiVersion: cilium.io/v2alpha1
+          kind: CiliumL2AnnouncementPolicy
+          metadata:
+            name: default-l2-announcement-policy
+            namespace: kube-system
+          spec:
+            externalIPs: true
+            loadBalancerIPs: true
 
   roles:
     - role: deploy-configure-rke

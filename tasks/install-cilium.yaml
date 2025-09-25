@@ -8,7 +8,7 @@
 - name: Create cilium config
   ansible.builtin.template:
     src: cilium-config.yaml.j2
-    dest: "{{ k3s_config_dir }}/{{ cilium_config }}"
+    dest: "{{ config_dir }}/{{ cilium_config }}"
   tags: cilium_config
 
 - name: Install cilium
@@ -19,7 +19,7 @@
       --set kubeProxyReplacement={{ cilium_kube_proxy_replacement }} \
       --helm-set=operator.replicas={{ cilium_operator_replicas }}
     cilium status --wait
-    cilium upgrade -f {{ k3s_config_dir }}/{{ cilium_config }}
+    cilium upgrade -f {{ config_dir }}/{{ cilium_config }}
     cilium status --wait
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
