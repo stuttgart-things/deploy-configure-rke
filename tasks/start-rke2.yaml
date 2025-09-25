@@ -2,6 +2,13 @@
 - name: Create rke2 resources
   ansible.builtin.include_tasks: configure-rke2.yaml
 
+- name: Remove kube-proxy static pod manifest (if exists)
+  ansible.builtin.file:
+    path: "{{ rke2_kube_proxy_file }}"
+    state: absent
+  when: disableKubeProxy|bool
+  ignore_errors: yes
+
 - name: Enable and start rke2 server service (for installing)
   ansible.builtin.systemd:
     name: "{{ rke2_server_service }}"

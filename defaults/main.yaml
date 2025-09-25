@@ -74,6 +74,9 @@ cilium_version: 0.18.2
 kubectl_version: v1.33.1
 helm_version: 3.19.0
 
+disableKubeProxy: false
+rke2_kube_proxy_file: /var/lib/rancher/rke2/agent/pod-manifests/kube-proxy.yaml
+
 rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
 rancher_cluster_name: rancher-things
 network_plugin: canal
