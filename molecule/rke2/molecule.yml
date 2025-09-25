@@ -12,7 +12,7 @@ driver:
   name: default
   managed: False
 platforms:
-  - name: cluster-test1-2.labul.sva.de
+  - name: 10.100.136.130
 provisioner:
   name: ansible
   env:

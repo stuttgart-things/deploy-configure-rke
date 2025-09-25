@@ -16,6 +16,12 @@
     regexp: "127.0.0.1:{{ k8s_api_port }}"
     line: "    server: https://{% for host in groups['initial_master_node'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% endfor %}:{{ k8s_api_port }}"
 
+- name: Install cilium
+  ansible.builtin.include_tasks: install-cilium.yaml
+  vars:
+    kubeconfig_path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
+  when: install_cilium|bool and rke2_cni == "none"
+
 - name: Test if rke2 server is successfully deployed
   ansible.builtin.shell: |
     kubectl get nodes --kubeconfig {{ rke2_kubeconfig_name }}
