@@ -9,13 +9,19 @@
   when: disableKubeProxy|bool
   ignore_errors: yes
 
-- name: Enable and start rke2 server service (for installing)
+- name: Check if RKE2 server service is already running
   ansible.builtin.systemd:
     name: "{{ rke2_server_service }}"
     enabled: yes
-    state: started
+  register: rke2_service_status
+
+- name: Start or restart RKE2 server service
+  ansible.builtin.systemd:
+    name: "{{ rke2_server_service }}"
+    state: "{{ 'restarted' if rke2_service_status.status.ActiveState == 'active' else 'started' }}"
     daemon_reload: yes
   ignore_errors: "{{ rke2_task_can_possibly_fail }}"
+  when: restart_rke2_already_running|bool
 
 - name: Add external ip to kubeconfig
   ansible.builtin.lineinfile:

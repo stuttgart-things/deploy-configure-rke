@@ -68,4 +68,4 @@
 
 - name: Deploy additional manifests
   ansible.builtin.include_tasks: deploy-additional-manifests.yaml
-  when: manifests is defined
+  when: manifests is defined and manifests == "present"

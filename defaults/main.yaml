@@ -39,6 +39,7 @@ rke2_node_register_port: 9345
 k8s_api_port: 6443
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
 fetched_kubeconfig_path: ./kubeconfig
+restart_rke2_already_running: true
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
 rke2_release_kind: rke2r1 #rke2r2
