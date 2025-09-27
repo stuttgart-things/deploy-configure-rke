@@ -180,33 +180,6 @@ EOF
 ```
 </details>
 
-<details><summary>EXAMPLE RKE1 PLAYBOOK</summary>
-
-```
-cat <<EOF > ./play.yaml
----
-- hosts: all
-  become: true
-
-  vars:
-    rke_docker_version: '=5:23.0.6-1~ubuntu.22.04~jammy'
-    rke_docker_ce_version: '5:23.0.6*'
-    rke_version: 1
-    rke_user_name: rke
-    rke_installer_version: 1.4.8
-    rke_kubernetes_version: v1.26.7-rancher1-1
-    project_folder: rancher-things
-    rke_create_rke_user: true
-    network_plugin: calico
-    rke2_airgapped_installation: false
-
-  roles:
-    - role: deploy-configure-rke
-EOF
-
-ansible-playbook -i inv play.yaml -vv
-```
-
 </details>
 
 <details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
@@ -214,32 +187,59 @@ ansible-playbook -i inv play.yaml -vv
 ```bash
 cat <<EOF > ./play.yaml
 ---
-- hosts: all
+- name: Converge
+  hosts: all
   gather_facts: true
   become: true
 
   vars:
     rke_state: present #absent
     rke_version: 2
-    rke2_k8s_version: 1.33.1
+    rke2_k8s_version: 1.33.4
+    prepare_rancher_ha_nodes: true #false
     rke2_airgapped_installation: true
-    rke2_release_kind: rke2r1 #rke2r2
-    rke2_cni: cilium
+    rke2_release_kind: rke2r1 # rke2r2
+    cluster_setup: multinode
+    disableKubeProxy: true
     disable_rke2_components:
       - rke2-ingress-nginx
-      - rke-snapshot-controller
-    cluster_setup: multinode
-    rke2_cni: cilium
-    values_cilium: |
-      ---
-      eni:
-        enabled: true
+      - rke2-snapshot-controller
+      - rke2-snapshot-controller-crd
+      - rke2-snapshot-validation-webhook
+      #- rke2-metrics-server
+    rke2_cni: none
+    install_cilium: true
 
-    helmChartConfig:
-      cilium:
-        name: rke2-cilium
-        namespace: kube-system
-        release_values: "{{ values_cilium }}"
+    fetched_kubeconfig_path: rke2-cluster.yaml
+    rke2_registry_mirrors:
+      - name: "docker.io"
+        endpoints:
+          #- "https://docker.harbor.example.com"
+          - "https://registry-1.docker.io"
+
+    manifests:
+      lb_pool:
+        manifest: |
+          apiVersion: cilium.io/v2alpha1
+          kind: CiliumLoadBalancerIPPool
+          metadata:
+            name: first-pool
+          spec:
+            blocks:
+              - start: 10.100.136.227
+                stop: 10.100.136.228
+
+      announcement_policy:
+        manifest: |
+          ---
+          apiVersion: cilium.io/v2alpha1
+          kind: CiliumL2AnnouncementPolicy
+          metadata:
+            name: default-l2-announcement-policy
+            namespace: kube-system
+          spec:
+            externalIPs: true
+            loadBalancerIPs: true
 
   roles:
     - role: deploy-configure-rke
