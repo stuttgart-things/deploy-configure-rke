@@ -2,19 +2,39 @@
 - name: Create rke2 resources
   ansible.builtin.include_tasks: configure-rke2.yaml
 
-- name: Enable and start rke2 server service (for installing)
+- name: Remove kube-proxy static pod manifest (if exists)
+  ansible.builtin.file:
+    path: "{{ rke2_kube_proxy_file }}"
+    state: absent
+  when: disableKubeProxy|bool
+  ignore_errors: yes
+
+- name: Check if RKE2 server service is already running
   ansible.builtin.systemd:
     name: "{{ rke2_server_service }}"
     enabled: yes
-    state: started
+  register: rke2_service_status
+
+- name: Start or restart RKE2 server service
+  ansible.builtin.systemd:
+    name: "{{ rke2_server_service }}"
+    state: "{{ 'restarted' if rke2_service_status.status.ActiveState == 'active' else 'started' }}"
     daemon_reload: yes
   ignore_errors: "{{ rke2_task_can_possibly_fail }}"
+  when: restart_rke2_already_running|bool
 
 - name: Add external ip to kubeconfig
   ansible.builtin.lineinfile:
     path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
     regexp: "127.0.0.1:{{ k8s_api_port }}"
     line: "    server: https://{% for host in groups['initial_master_node'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% endfor %}:{{ k8s_api_port }}"
+
+- name: Install cilium
+  ansible.builtin.include_tasks: install-cilium.yaml
+  vars:
+    kubeconfig_path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
+    config_dir: "{{ rke2_config_dir }}"
+  when: install_cilium|bool and rke2_cni == "none"
 
 - name: Test if rke2 server is successfully deployed
   ansible.builtin.shell: |

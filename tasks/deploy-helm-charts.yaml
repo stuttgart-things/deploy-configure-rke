@@ -27,11 +27,3 @@
   loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
   when: inventory_hostname in groups['initial_master_node'] and helm_releases is defined
   ignore_errors: "{{ item.value.ignore | default(omit) }}"
-
-- name: Deploy additional manifests
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig_path }}"
-    state: present
-    definition: "{{ lookup('template', 'manifest-file.yaml.j2') | from_yaml }}"
-  loop: "{{ q('ansible.builtin.dict', manifests) }}"
-  when: inventory_hostname in groups['initial_master_node'] and manifests is defined

@@ -39,6 +39,7 @@ rke2_node_register_port: 9345
 k8s_api_port: 6443
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
 fetched_kubeconfig_path: ./kubeconfig
+restart_rke2_already_running: true
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
 rke2_release_kind: rke2r1 #rke2r2
@@ -54,10 +55,6 @@ rke2_server_service_dir: /usr/local/lib/systemd/system
 rke2_server_service_env_config: rke2-server.env
 rke2_configure_proxy: false
 
-operation: deploy
-rke_parameter: up
-rke_statefile_name: rancher-cluster.rkestate
-rke_cluster_config_name: rancher-cluster.yml
 fetch_kubeconfig_local: true
 path_to_kubeconfig: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
 path_to_rke_statefile: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
@@ -77,6 +74,9 @@ install_cilium: true
 cilium_version: 0.18.2
 kubectl_version: v1.33.1
 helm_version: 3.19.0
+
+disableKubeProxy: false
+rke2_kube_proxy_file: /var/lib/rancher/rke2/agent/pod-manifests/kube-proxy.yaml
 
 rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
 rancher_cluster_name: rancher-things
@@ -272,13 +272,14 @@ helm_state: present
 
 rke2_config: rke2-config.yaml.j2
 helm_template: helm-chart-config.yaml.j2
-helmChartConfig:
-  cilium:
-    name: rke2-cilium
-    namespace: kube-system
-    release_values: "{{ values_cilium }}"
 
-values_cilium: |
-  ---
-  eni:
-    enabled: true
+# helmChartConfig:
+#   cilium:
+#     name: rke2-cilium
+#     namespace: kube-system
+#     release_values: "{{ values_cilium }}"
+
+# values_cilium: |
+#   ---
+#   eni:
+#     enabled: true

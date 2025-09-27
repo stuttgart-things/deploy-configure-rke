@@ -12,10 +12,3 @@
     - ansible.builtin.include_role:
         name: download-install-binary
   when: install_helm|bool
-
-- name: Install cilium
-  block:
-    - ansible.builtin.set_fact: bin="{{ cilium_binary|combine(cilium_binary) }}"
-    - ansible.builtin.include_role:
-        name: download-install-binary
-  when: install_cilium|bool
