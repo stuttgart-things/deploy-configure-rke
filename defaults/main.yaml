@@ -4,10 +4,7 @@ rke_version: 2
 rke_dir: "/var/lib/rancher/rke{{ rke_version }}"
 validate_certs: true
 prepare_rancher_ha_nodes: true
-rke_install_docker: "{{ true if rke_version==1 else false }}"
-rke_docker_package_version: "23.0.6"
-rke_docker_version: "{% if rke_docker_package_version == '23.0.6' and ansible_os_family == 'Debian' and ansible_distribution_major_version|int == 22 %}=5:23.0.6-1~ubuntu.22.04~jammy{% elif rke_docker_package_version == '24.0.6' and ansible_os_family == 'Debian' and ansible_distribution_major_version|int == 22 %}=5:23.0.6-1~ubuntu.23.04~lunar{% else %}{% endif %}"
-rke_docker_ce_version: "{% if rke_docker_package_version == '23.0.6' and ansible_os_family == 'Debian' %}5:23.0.6*{% else %}{% endif %}"
+
 template_creation_setup: true
 cluster_setup: multinode
 
@@ -83,16 +80,6 @@ rancher_cluster_name: rancher-things
 network_plugin: canal
 path_to_private_key: "/root/rke_rsa"
 
-rke_user:
-  - username: "{{ rke_user_name }}"
-    name: "{{ rke_user_name }} user"
-    groups: ['{{ admin_group }}', '{{ additional_group }}']
-    home: "/home/{{ rke_user_name }}"
-    profile: |
-      alias ll='ls -ahl'
-    ssh_key:
-      - "{{ rke_pub_key }}"
-    enable_ssh_tcp_forwarding: True
 
 kubectl_binary:
   kubectl:
