@@ -1,6 +1,6 @@
 # stuttgart-things/deploy-upgrade-rke
 
-deploy rancher kubernetes engine + configuration in version 1/2 on linux based systems
+deploy rancher kubernetes engine  2 + configuration
 
 ## DEV
 
