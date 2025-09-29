@@ -8,7 +8,7 @@
     rke_state: present #absent
     rke_version: 2
     rke2_k8s_version: 1.33.4
-    prepare_rancher_ha_nodes: true# false #true
+    prepare_rancher_ha_nodes: true # false #true
     rke2_airgapped_installation: true
     rke2_release_kind: rke2r1 # rke2r2
     cluster_setup: multinode
