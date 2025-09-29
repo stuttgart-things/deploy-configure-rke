@@ -185,6 +185,27 @@ EOF
 <details><summary>EXAMPLE RKE2 PLAYBOOK</summary>
 
 ```bash
+cat <<EOF > inventory.yaml
+---
+all:
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+  children:
+    initial_master_node:
+      hosts:
+        10.31.103.33:
+    additional_master_nodes:
+      hosts:
+        10.31.103.28:
+        10.31.103.35:
+    workers:
+      hosts:
+        10.31.103.29:
+EOF
+```
+
+
+```bash
 cat <<EOF > ./play.yaml
 ---
 - name: Converge

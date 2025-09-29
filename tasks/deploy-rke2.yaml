@@ -35,7 +35,16 @@
 
 - name: Deploy additional master nodes
   ansible.builtin.include_tasks: start-rke2.yaml
-  when: inventory_hostname in groups['additional_master_nodes'] and cluster_setup != 'singlenode'
+  when: inventory_hostname in groups['additional_master_nodes'] or inventory_hostname in groups['workers'] and cluster_setup != 'singlenode'
+
+- name: Label worker nodes
+  ansible.builtin.shell: |
+    for node in $(kubectl --kubeconfig {{ rke2_kubeconfig_name }} get nodes --no-headers | awk '$3=="<none>" {print $1}'); do
+      kubectl --kubeconfig {{ rke2_kubeconfig_name }} label node $node node-role.kubernetes.io/worker=worker --overwrite
+    done
+  args:
+    chdir: "{{ rke2_config_dir }}"
+  when: inventory_hostname in groups['workers']
 
 - name: Add alias for crictl to nodes
   lineinfile:

@@ -24,3 +24,9 @@ disable:
 {% endfor %}
 {% endif %}
 disable-kube-proxy: {{ disableKubeProxy }}
+{% if inventory_hostname in groups['workers'] %}
+disable-etcd: true
+disable-apiserver: true
+disable-controller-manager: true
+disable-scheduler: true
+{% endif %}
