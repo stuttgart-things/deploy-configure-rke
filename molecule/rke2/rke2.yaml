@@ -26,7 +26,6 @@
     rke2_registry_mirrors:
       - name: "docker.io"
         endpoints:
-          - "https://docker.harbor.idp.kubermatic.sva.dev"
           - "https://registry-1.docker.io"
 
     manifests:
