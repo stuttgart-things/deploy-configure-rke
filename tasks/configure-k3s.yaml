@@ -1,24 +1,9 @@
 ---
 - name: Install cilium
-  block:
-    - name: Create cilium config
-      ansible.builtin.template:
-        src: cilium-config.yaml.j2
-        dest: "{{ k3s_config_dir }}/{{ cilium_config }}"
-      tags: cilium_config
-
-    - name: Install cilium
-      ansible.builtin.shell: |
-        cilium install \
-          --set k8sServiceHost={{ cilium_api_server_ip }} \
-          --set k8sServicePort={{ cilium_api_server_port }} \
-          --set kubeProxyReplacement={{ cilium_kube_proxy_replacement }} \
-          --helm-set=operator.replicas={{ cilium_operator_replicas }}
-        cilium status --wait
-        cilium upgrade -f {{ k3s_config_dir }}/{{ cilium_config }}
-        cilium status --wait
-      environment:
-        KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+  ansible.builtin.include_tasks: install-cilium.yaml
+  vars:
+    kubeconfig_path: "{{ k3s_kubeconfig_path }}"
+    config_dir: "{{ k3s_config_dir }}"
 
   when: install_cilium|bool and inventory_hostname in groups['initial_master_node']
 
