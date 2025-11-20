@@ -55,14 +55,14 @@
   ansible.builtin.file:
     path: /home/{{ ansible_user }}/.kube
     state: directory
-    owner: sthings
-    group: sthings
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: '0700'
 
 - name: Copy k3s kubeconfig to users home
   ansible.builtin.copy:
     src: /etc/rancher/k3s/k3s.yaml
-    dest: /home/{{ ansible_user }}/.kube/test
+    dest: /home/{{ ansible_user }}/.kube/{{ kubeconfig_name | default('config') }}
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0644'
