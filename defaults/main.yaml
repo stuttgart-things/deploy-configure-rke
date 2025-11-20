@@ -5,6 +5,7 @@ rke_dir: "/var/lib/rancher/rke{{ rke_version }}"
 validate_certs: true
 prepare_rancher_ha_nodes: true
 ansible_user: sthings
+destination_kubeconfig_name: k3s
 
 template_creation_setup: true
 cluster_setup: multinode
