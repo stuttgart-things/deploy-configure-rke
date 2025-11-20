@@ -51,6 +51,25 @@
     run_once: true
   when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig|bool
 
+- name: Ensure .kube directory exists for user
+  ansible.builtin.file:
+    path: /home/{{ ansible_user }}/.kube
+    state: directory
+    owner: sthings
+    group: sthings
+    mode: '0700'
+
+- name: Copy k3s kubeconfig to users home
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /home/{{ ansible_user }}/.kube/test
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+    remote_src: true
+    become: true
+    become_user: root
+
 - name: Remove rke2
   ansible.builtin.include_tasks: remove-rke2.yaml
   when: rke_state == "absent" and rke_version == 2 and not install_k3s
