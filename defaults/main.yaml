@@ -6,7 +6,7 @@ validate_certs: true
 prepare_rancher_ha_nodes: true
 ansible_user: sthings
 destination_kubeconfig_name: k3s
-copy_kubeconfig: true
+copy_kubeconfig: false
 
 template_creation_setup: true
 cluster_setup: multinode
