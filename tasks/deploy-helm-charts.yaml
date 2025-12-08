@@ -11,7 +11,7 @@
   kubernetes.core.helm_plugin:
     plugin_path: "https://github.com/databus23/helm-diff"
     state: present
-  when: inventory_hostname in groups['initial_master_node']
+  when: inventory_hostname in groups['initial_master_node'] and install_helm_diff|bool
 
 - name: Deploy helm charts
   kubernetes.core.helm:

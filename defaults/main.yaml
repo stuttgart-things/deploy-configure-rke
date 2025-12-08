@@ -54,6 +54,7 @@ rke2_server_service_dir: /usr/local/lib/systemd/system
 rke2_server_service_env_config: rke2-server.env
 rke2_configure_proxy: false
 
+install_helm_diff: true
 fetch_kubeconfig_local: true
 path_to_kubeconfig: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
 path_to_rke_statefile: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
