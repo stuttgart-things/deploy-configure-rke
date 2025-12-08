@@ -54,9 +54,9 @@
 - name: Copy kubeconfig
   ansible.builtin.include_tasks: copy-kubeconfig.yaml
   vars:
-    kubeconfig_path: "{{ kubeconfig_path }}/{{ rke2_kubeconfig_name }}"
+    kubeconfig_path: "{{ kubeconfig_path }}"
     destination_kubeconfig_path: "/home/{{ ansible_user }}/.kube/{{ destination_kubeconfig_name }}"
-  when: install_k3s|bool and k3s_state == "present"
+  when: copy_kubeconfig|bool and k3s_state == "present"
 
 - name: Remove rke2
   ansible.builtin.include_tasks: remove-rke2.yaml
