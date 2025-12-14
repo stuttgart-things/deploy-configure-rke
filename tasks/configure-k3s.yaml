@@ -13,9 +13,12 @@
       ansible.builtin.shell: |
         openssl genrsa -out {{ root_ca_key }} 2048
         openssl req -x509 -new -nodes -key {{ root_ca_key }} \
-        -days 3650 -sha256 -out {{ root_ca }} -subj "{{ root_cert_subject }}"
+          -days 3650 -sha256 -out {{ root_ca }} -subj "{{ root_cert_subject }}"
         cp {{ root_ca }} {{ os_cert_path }}/k3s-ca.crt
-        update-ca-certificates
+        {{ update_cert_command }}
+      vars:
+        os_cert_path: "{{ '/etc/pki/ca-trust/source/anchors' if ansible_facts['os_family'] == 'RedHat' else '/usr/local/share/ca-certificates' }}"
+        update_cert_command: "{{ 'update-ca-trust extract' if ansible_facts['os_family'] == 'RedHat' else 'update-ca-certificates' }}"
 
     - name: Create cert-manager namespace and secret
       ansible.builtin.shell: |
