@@ -3,9 +3,6 @@
   ansible.builtin.include_role:
     name: configure-rke-node
   vars:
-    install_docker: "{{ rke_install_docker }}"
-    docker_version: "{{ rke_docker_version }}"
-    docker_ce_version: "{{ rke_docker_ce_version }}"
     template_creation_setup: true
   when: prepare_rancher_ha_nodes|bool
 

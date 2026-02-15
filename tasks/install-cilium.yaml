@@ -1,9 +1,21 @@
 ---
-- name: Install cilium
+- name: Download cilium binary
   block:
     - ansible.builtin.set_fact: bin="{{ cilium_binary|combine(cilium_binary) }}"
     - ansible.builtin.include_role:
         name: download-install-binary
+
+- name: Install Gateway API CRDs
+  ansible.builtin.command: >
+    kubectl apply -f
+    https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ cilium_gateway_api_crds_version }}/standard-install.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: gateway_api_crds_result
+  changed_when: "'configured' in gateway_api_crds_result.stdout or 'created' in gateway_api_crds_result.stdout"
+  when:
+    - cilium_enable_gateway_api | bool
+    - inventory_hostname in groups['initial_master_node']
 
 - name: Create cilium config
   ansible.builtin.template:
@@ -11,14 +23,33 @@
     dest: "{{ config_dir }}/{{ cilium_config }}"
   tags: cilium_config
 
+- name: Check if cilium is already installed
+  ansible.builtin.command: cilium status
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: cilium_status
+  failed_when: false
+  changed_when: false
+  when: inventory_hostname in groups['initial_master_node']
+
 - name: Install cilium
   ansible.builtin.shell: |
+    set -e
     cilium install \
       --set k8sServiceHost={{ cilium_api_server_ip }} \
       --set k8sServicePort={{ cilium_api_server_port }} \
       --set kubeProxyReplacement={{ cilium_kube_proxy_replacement }} \
       --helm-set=operator.replicas={{ cilium_operator_replicas }}
     cilium status --wait
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when:
+    - inventory_hostname in groups['initial_master_node']
+    - cilium_status.rc != 0
+
+- name: Upgrade cilium configuration
+  ansible.builtin.shell: |
+    set -e
     cilium upgrade -f {{ config_dir }}/{{ cilium_config }}
     cilium status --wait
   environment:

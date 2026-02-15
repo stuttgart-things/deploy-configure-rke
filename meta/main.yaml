@@ -1,6 +1,6 @@
 galaxy_info:
   author: Patrick Hermann
-  description: installs/upgrades Rancher Kubernetes Engine (RKE1 or 2)
+  description: installs/upgrades Rancher Kubernetes Engine (RKE2)
   company: SVA GmbH
 
   # If the issue tracker for your role is not on github, uncomment the

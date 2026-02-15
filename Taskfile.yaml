@@ -8,6 +8,10 @@ vars:
   DAGGER_ANSIBLE_MODULE: github.com/stuttgart-things/dagger/ansible
   DAGGER_ANSIBLE_MODULE_VERSION: v0.1.2
 
+includes:
+  git:
+    taskfile: https://raw.githubusercontent.com/stuttgart-things/tasks/refs/heads/main/git/git.yaml
+
 # PRECONDITION TO CHECK IF THE VIRTUAL ENVIRONMENT IS ACTIVATED
 venv-precondition: &venv
   - sh: |
@@ -22,20 +26,6 @@ tasks:
         task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
         task ${task}
 
-  branch:
-    desc: Create branch from main
-    cmds:
-      - git checkout main
-      - git branch
-      - git pull
-      - |
-        echo "Enter to be created (remote) branch:"
-        read BRANCH_NAME;
-        git checkout -b ${BRANCH_NAME}
-        git push origin ${BRANCH_NAME}
-      - git branch
-      - git branch --set-upstream-to=origin/main ${BRANCH_NAME}
-
   run-molecule:
     preconditions: *venv
     cmds:
@@ -43,23 +33,6 @@ tasks:
         COLLECTION_NAME=$(gum choose "k3s" "rke2")
         molecule test -s ${COLLECTION_NAME}
 
-  switch-remote:
-    desc: Switch to remote branch
-    cmds:
-      - |
-        git fetch
-        branches=($(git branch -r | grep -v 'origin/HEAD' | sed 's|origin/||'))
-        branch=$(printf "%s\n" "${branches[@]}" | gum choose)
-        git switch -c ${branch} --track origin/${branch}
-        git branch && git status
-
-  switch-local:
-    desc: Switch to local branch
-    cmds:
-      - |
-        branches=$(git branch -a | grep -v 'remotes')
-        branch=$(printf "%s\n" "${branches[@]}" | gum choose)
-        git checkout ${branch} && git pull
 
   create-release:
     desc: Create release on github w/ artifact
@@ -116,12 +89,6 @@ tasks:
         sh: ls {{ .SOURCE_COLLECTION_PATH }} | xargs -n1 printf '"%s" '
       GH_REPO: stuttgart-things/ansible
 
-  check:
-    desc: "Run pre-commit hooks"
-    cmds:
-      - pre-commit autoupdate
-      - pre-commit run -a
-
   setup-molecule:
     preconditions: *venv
     cmds:
@@ -137,48 +104,3 @@ tasks:
       - rm -rf ./.venv
       - python3 -m venv ./.venv
       - echo "DON'T FORGET TO RUN - source .venv/bin/activate"
-
-  commit:
-    desc: Commit + push code into branch
-    deps:
-      - check
-    cmds:
-      - git branch --set-upstream-to=origin/{{ .BRANCH }}
-      - git pull
-      - git status
-      - |
-        git add *
-        git status
-        if [[ -n $(git status --porcelain) ]]; then
-          echo "Review the changes above."
-          gum confirm "Do you want to commit these changes?" || exit 0
-
-          echo "ENTER COMMIT MESSAGE"
-          COMMIT_MESSAGE=$(gum choose "CUSTOM MESSAGE" "feat: {{ .BRANCH }}" "fix: {{ .BRANCH }}" "BREAKING CHANGE: {{ .BRANCH }}")
-
-          if [ "$COMMIT_MESSAGE" == "CUSTOM MESSAGE" ]; then
-            CHANGED_FILES=$(git status --short | awk '{print $2}' | tr '\n' ' ')
-            COMMIT_MESSAGE=$(gum input --placeholder "Commit message" --value "Changed: $CHANGED_FILES")
-          fi
-
-          git commit --allow-empty -a -m "$COMMIT_MESSAGE"
-        else
-          echo "No changes to commit."
-        fi
-      - git push origin -u {{ .BRANCH }}
-
-  pr:
-    desc: Create pull request into main
-    cmds:
-      - task: commit
-      - |
-        if gh pr list | grep -q "{{.BRANCH}}"; then
-          echo "⚠️ PR already exists for branch {{.BRANCH}}, closing it..."
-          gh pr close {{.BRANCH}}
-        else
-          echo "✅ No existing PR found for branch {{.BRANCH}}."
-        fi
-      - gh pr create -t "{{ .BRANCH }}" -b "{{ .BRANCH }} branch into main"
-      - sleep 20s
-      - gh pr merge $(gh pr list | grep "^[^#;]" | grep '{{ .BRANCH }}' | awk '{print $1}') --auto --rebase --delete-branch
-      - git checkout main && git pull

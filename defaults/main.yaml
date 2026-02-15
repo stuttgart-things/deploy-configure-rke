@@ -22,7 +22,7 @@ kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
 rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
-rke2_k8s_version: 1.33.4
+rke2_k8s_version: 1.35.0
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
@@ -42,7 +42,7 @@ fetched_kubeconfig_path: ./kubeconfig
 restart_rke2_already_running: true
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
-rke2_release_kind: rke2r1 #rke2r2
+rke2_release_kind: rke2r3 #rke2r2 +rke2r1
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: false
 rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
@@ -57,33 +57,19 @@ rke2_configure_proxy: false
 
 install_helm_diff: true
 fetch_kubeconfig_local: true
-path_to_kubeconfig: "{{ rancher_cluster_folder }}/kube_config_rancher-cluster.yml"
-path_to_rke_statefile: "{{ rancher_cluster_folder }}/{{ rke_statefile_name }}"
-path_to_rke_cluster_config: "{{ rancher_cluster_folder }}/{{ rke_cluster_config_name }}"
-path_tls_crt: "{{ rancher_cluster_folder }}/tls.crt"
-path_tls_key: "{{ rancher_cluster_folder }}/tls.key"
-path_cacerts_pem: "{{ rancher_cluster_folder }}/cacerts.pem"
 rke2_kubeconfig_path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
 
-path_to_rke_installer_binary: /usr/bin/rke
 path_to_kubectl_binary: /usr/bin/kubectl
 install_kubectl: true
 install_helm: true
-install_rke_installer: true
 
 install_cilium: true
-cilium_version: 0.18.2
-kubectl_version: v1.33.1
-helm_version: 3.19.0
+cilium_version: 0.19.0
+kubectl_version: v1.35.1
+helm_version: 4.1.1
 
 disableKubeProxy: false
 rke2_kube_proxy_file: /var/lib/rancher/rke2/agent/pod-manifests/kube-proxy.yaml
-
-rancher_cluster_folder: "/home/{{ rke_user_name }}/{{ rancher_cluster_name }}"
-rancher_cluster_name: rancher-things
-network_plugin: canal
-path_to_private_key: "/root/rke_rsa"
-
 
 kubectl_binary:
   kubectl:
@@ -96,16 +82,6 @@ kubectl_binary:
     bin_dir: "{{ path_to_kubectl_binary }}"
     version_cmd: " version --client"
     target_version: "{{ kubectl_version }}"
-
-rke_installer_binary:
-  rke:
-    bin_name: "rke_linux-amd64"
-    bin_version: "{{ rke_installer_version }}"
-    source_url: "https://github.com/rancher/rke/releases/download/v{{ rke_installer_version }}/rke_linux-amd64"
-    bin_to_copy: "rke_linux-amd64"
-    bin_dir: "{{ path_to_rke_installer_binary }}"
-    to_remove: ""
-    check_bin_version_before_installing: true
 
 cilium_binary:
   cilium:
@@ -165,6 +141,8 @@ cilium_api_server_port: 6443
 cilium_kube_proxy_replacement: true
 cilium_operator_replicas: 1
 cilium_enable_ingress: false
+cilium_enable_gateway_api: true
+cilium_gateway_api_crds_version: v1.4.1
 cilium_rollout_pods: true
 cilium_config: cilium.yaml
 
