@@ -4,16 +4,6 @@ deploy rancher kubernetes engine  2 + configuration
 
 ## DEV
 
-<details><summary>TASKS</summary>
-
-```bash
-task: Available tasks for this project:
-* branch:           Create branch from main
-* commit:           Commit + push code into branch
-* pr:               Create pull request into main
-* setup-venv:       Setup python virtual environment
-```
-
 </details>
 
 <details><summary>TEST w/ MOLECULE</summary>
@@ -28,7 +18,6 @@ scenario=rke2 task run-molecule
 ```
 
 </details>
-
 
 ## USAGE OPTION #1 - USING THE COLLECTION
 
@@ -53,6 +42,7 @@ initial_master_node:
   hosts:
     10.100.136.150
 additional_master_nodes:
+workers:
 EOF
 
 # PLAYBOOK CALL
@@ -80,6 +70,7 @@ additional_master_nodes:
   hosts:
     10.100.136.151
     10.100.136.152
+workers:
 EOF
 
 # PLAYBOOK CALL
@@ -107,6 +98,7 @@ additional_master_nodes:
   hosts:
     10.100.136.151
     10.100.136.152
+workers:
 EOF
 
 # PLAYBOOK CALL
