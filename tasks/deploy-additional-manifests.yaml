@@ -1,11 +1,4 @@
 ---
-- name: Install kubernetes Python library and packaging
-  ansible.builtin.pip:
-    name:
-      - kubernetes
-      - packaging
-  when: inventory_hostname in groups['initial_master_node']
-
 - name: Deploy additional manifests
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig_path }}"
