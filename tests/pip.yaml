@@ -1,0 +1,36 @@
+- name: Verify Ansible Kubernetes python environment
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Show Python interpreter used by Ansible on remote host
+      ansible.builtin.debug:
+        var: ansible_python.executable
+
+    - name: Show Python version
+      ansible.builtin.command: "{{ ansible_python.executable }} --version"
+      register: pyver
+      changed_when: false
+
+    - name: Print Python version
+      ansible.builtin.debug:
+        var: pyver.stdout
+
+    - name: Install kubernetes python requirements into the remote Python interpreter
+      ansible.builtin.pip:
+        name:
+          - kubernetes
+          - packaging
+        # No need to specify executable; pip module uses the interpreter's pip by default
+        # If you need to force a specific pip, use executable: /path/to/pip
+
+    - name: Test kubernetes module import
+      ansible.builtin.command: >
+        {{ ansible_python.executable }} -c
+        "from kubernetes import client, config; import packaging; print('K8S PYTHON OK')"
+      register: k8stest
+      changed_when: false
+
+    - name: Show test result
+      ansible.builtin.debug:
+        var: k8stest.stdout
