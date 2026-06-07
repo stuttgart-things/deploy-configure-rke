@@ -322,6 +322,53 @@ ansible-playbook -i inv play.yaml -vv
 
 </details>
 
+<details><summary>EXAMPLE K3S AIRGAPPED PLAYBOOK</summary>
+
+```bash
+cat <<EOF > ./play.yaml
+- hosts: all
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: present #absent
+    k3s_k8s_version: 1.36.1
+    k3s_release_kind: k3s1
+    cluster_setup: singlenode
+    install_cillium: true
+
+    # --- air-gapped install -------------------------------------------------
+    # Pre-stage the images archive AND the k3s binary, then run the install
+    # script with INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream pull).
+    k3s_airgapped_installation: true
+
+    # Optional overrides (each defaults to the upstream release for the pinned
+    # version). Point them at a mirror / locally hosted artifact for a fully
+    # offline run:
+    # k3s_airgapped_image_url: "https://your-host/k3s-airgap-images-amd64.tar.zst"
+    # k3s_airgapped_archive: k3s-airgap-images-amd64.tar.zst
+    # k3s_airgapped_install_dir: /var/lib/rancher/k3s/agent/images/
+    # k3s_airgapped_checksum: "sha256:..."          # optional, verifies the archive
+    # k3s_airgapped_binary_url: "https://your-host/k3s"
+    # k3s_airgapped_binary_dest: /usr/local/bin/k3s
+    # k3s_airgapped_binary_checksum: "sha256:..."   # optional, verifies the binary
+    # k3s_installscript_url: "https://your-host/k3s-install.sh"  # for zero egress
+
+    # SELinux toggles (default false). On air-gapped, SELinux-enforcing
+    # RHEL-family hosts set both true so a missing k3s-selinux policy does not
+    # abort the offline install:
+    # k3s_skip_selinux_rpm: true   # never reach the package manager for k3s-selinux
+    # k3s_selinux_warn: true       # missing SELinux policy -> warning instead of fatal
+
+  roles:
+    - role: deploy-configure-rke
+EOF
+
+ansible-playbook -i inv play.yaml -vv
+```
+
+</details>
+
 <details><summary>EXAMPLE K3S PLAYBOOK w/ ADDONS</summary>
 
 ```bash
