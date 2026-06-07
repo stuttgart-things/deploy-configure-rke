@@ -50,6 +50,16 @@
         validate_certs: "{{ validate_certs }}"
         checksum: "{{ k3s_airgapped_checksum | default(omit) }}"
 
+    - name: Download k3s binary for offline install
+      ansible.builtin.get_url:
+        url: "{{ k3s_airgapped_binary_url }}"
+        dest: "{{ k3s_airgapped_binary_dest }}"
+        owner: "{{ rke2_user_name }}"
+        group: "{{ rke2_user_group }}"
+        mode: "0755"
+        validate_certs: "{{ validate_certs }}"
+        checksum: "{{ k3s_airgapped_binary_checksum | default(omit) }}"
+
   when: k3s_airgapped_installation|bool and install_k3s|bool and k3s_state == "present"
 
 - name: Deploy rke{{ rke_version }}
