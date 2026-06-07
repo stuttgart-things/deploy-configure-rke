@@ -7,7 +7,7 @@
   vars:
     install_k3s: true
     k3s_state: present #absent #present #absent
-    k3s_k8s_version: 1.33.4
+    k3s_k8s_version: 1.36.1
     k3s_release_kind: k3s1
     cluster_setup: multinode
     install_cillium: true
