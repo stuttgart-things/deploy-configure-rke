@@ -35,6 +35,8 @@ rke2_user_name: root
 rke2_task_can_possibly_fail: "{{ true if inventory_hostname in groups['additional_master_nodes'] else false }}"
 rke2_user_group: root
 rke2_server_service: rke2-server.service
+rke2_ready_retries: 40
+rke2_ready_delay: 30
 rke2_node_register_port: 9345
 k8s_api_port: 6443
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
@@ -47,6 +49,10 @@ rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{
 rke2_airgapped_installation: false
 rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
 rke2_airgapped_archive: rke2-images.linux-amd64.tar.zst
+# Optional checksum (e.g. "sha256:<hash>" or "sha256:<url>") for the air-gapped
+# image archive. Left undefined by default so the download behaviour is unchanged;
+# set it to make get_url verify the download and fail loudly on truncation.
+# rke2_airgapped_checksum: "sha256:..."
 add_crictl_alias: true
 rke2_bin_dir: "{{ rke_dir }}/bin/"
 rke2_containerd_sock: /run/k3s/containerd/containerd.sock
