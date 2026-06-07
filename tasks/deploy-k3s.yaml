@@ -21,6 +21,11 @@
     curl -sfL {{ k3s_installscript_url }} | sh -s - --config={{ k3s_config_dir }}/{{ k3s_config_name }}
   environment:
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    # When air-gapped, the binary is pre-staged at k3s_airgapped_binary_dest and
+    # the install script skips the upstream download. "false" keeps default behaviour.
+    INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_installation | bool else 'false' }}"
+    INSTALL_K3S_SKIP_SELINUX_RPM: "{{ 'true' if k3s_skip_selinux_rpm | bool else 'false' }}"
+    INSTALL_K3S_SELINUX_WARN: "{{ 'true' if k3s_selinux_warn | bool else 'false' }}"
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Read k3s token from inital master
@@ -49,6 +54,9 @@
     K3S_URL: "https://{{ k3s_master_ip[0] }}:6443"
     K3S_TOKEN: "{{ k3s_shared_token }}"
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_installation | bool else 'false' }}"
+    INSTALL_K3S_SKIP_SELINUX_RPM: "{{ 'true' if k3s_skip_selinux_rpm | bool else 'false' }}"
+    INSTALL_K3S_SELINUX_WARN: "{{ 'true' if k3s_selinux_warn | bool else 'false' }}"
   when: inventory_hostname in groups['additional_master_nodes']
 
 - name: Label worker nodes

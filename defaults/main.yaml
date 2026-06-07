@@ -118,9 +118,35 @@ helm_binary:
 install_k3s: false
 k3s_state: absent
 k3s_installscript_url: https://get.k3s.io
-k3s_k8s_version: 1.24.13
+k3s_k8s_version: 1.36.1
 k3s_release_kind: k3s1
 k3s_version: "v{{ k3s_k8s_version }}+{{ k3s_release_kind }}"
+# k3s air-gapped image archive (mirrors the rke2_airgapped_* vars).
+# Disabled by default; set k3s_airgapped_installation: true to pre-seed images.
+k3s_airgapped_installation: false
+k3s_airgapped_archive: k3s-airgap-images-amd64.tar.zst
+k3s_airgapped_install_dir: /var/lib/rancher/k3s/agent/images/
+# Override k3s_airgapped_image_url to point at any mirror/host, e.g. a locally
+# hosted .zst. Defaults to the upstream k3s-io release for the pinned version.
+k3s_airgapped_image_url: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_k8s_version }}%2B{{ k3s_release_kind }}/{{ k3s_airgapped_archive }}"
+# Optional checksum (e.g. "sha256:<hash>" or "sha256:<url>"); unset by default.
+# k3s_airgapped_checksum: "sha256:..."
+# Fully-offline binary install: when k3s_airgapped_installation is true the k3s
+# binary is fetched from k3s_airgapped_binary_url to k3s_airgapped_binary_dest and
+# the install script runs with INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream pull).
+# Override k3s_airgapped_binary_url to a mirror/locally hosted binary as needed.
+k3s_airgapped_binary_url: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_k8s_version }}%2B{{ k3s_release_kind }}/k3s"
+k3s_airgapped_binary_dest: /usr/local/bin/k3s
+# Optional checksum for the k3s binary; unset by default.
+# k3s_airgapped_binary_checksum: "sha256:..."
+# SELinux toggles for the k3s install script (default false -> upstream behaviour
+# unchanged). On air-gapped SELinux-enforcing (RHEL-family) hosts set both true:
+#   k3s_skip_selinux_rpm -> INSTALL_K3S_SKIP_SELINUX_RPM, never reach the package
+#     manager to install k3s-selinux (avoids repo/network access for the policy).
+#   k3s_selinux_warn     -> INSTALL_K3S_SELINUX_WARN, demote a missing SELinux
+#     policy from a fatal error to a warning so the offline install can complete.
+k3s_skip_selinux_rpm: false
+k3s_selinux_warn: false
 k3s_path_to_generated_token: /var/lib/rancher/k3s/server/node-token
 k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
 k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
