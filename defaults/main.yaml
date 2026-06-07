@@ -131,6 +131,14 @@ k3s_airgapped_install_dir: /var/lib/rancher/k3s/agent/images/
 k3s_airgapped_image_url: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_k8s_version }}%2B{{ k3s_release_kind }}/{{ k3s_airgapped_archive }}"
 # Optional checksum (e.g. "sha256:<hash>" or "sha256:<url>"); unset by default.
 # k3s_airgapped_checksum: "sha256:..."
+# Fully-offline binary install: when k3s_airgapped_installation is true the k3s
+# binary is fetched from k3s_airgapped_binary_url to k3s_airgapped_binary_dest and
+# the install script runs with INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream pull).
+# Override k3s_airgapped_binary_url to a mirror/locally hosted binary as needed.
+k3s_airgapped_binary_url: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_k8s_version }}%2B{{ k3s_release_kind }}/k3s"
+k3s_airgapped_binary_dest: /usr/local/bin/k3s
+# Optional checksum for the k3s binary; unset by default.
+# k3s_airgapped_binary_checksum: "sha256:..."
 k3s_path_to_generated_token: /var/lib/rancher/k3s/server/node-token
 k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
 k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
