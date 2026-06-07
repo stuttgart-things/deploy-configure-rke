@@ -1,7 +1,12 @@
 ---
-{% if k3s_registry_configs is defined %}
+{# Executors that pass extra-vars as `-e key=value` (e.g. the dagger ansible    #}
+{# module) deliver nested structures as JSON strings. Parse those back with     #}
+{# from_yaml; native list/dict values (e.g. plain ansible-playbook) pass through.#}
+{% set _configs = (k3s_registry_configs | from_yaml) if (k3s_registry_configs is defined and k3s_registry_configs is string) else (k3s_registry_configs | default({})) %}
+{% set _mirrors = (k3s_registry_mirrors | from_yaml) if (k3s_registry_mirrors is defined and k3s_registry_mirrors is string) else (k3s_registry_mirrors | default([])) %}
+{% if _configs %}
 configs:
-{% for host, cfg in k3s_registry_configs.items() %}
+{% for host, cfg in _configs.items() %}
   "{{ host }}":
 {% if cfg.username is defined %}
     auth:
@@ -19,9 +24,9 @@ configs:
 {% endif %}
 {% endfor %}
 {% endif %}
-{% if k3s_registry_mirrors is defined %}
+{% if _mirrors %}
 mirrors:
-{% for mirror in k3s_registry_mirrors %}
+{% for mirror in _mirrors %}
   "{{ mirror.name }}":
     endpoint:
 {% for ep in mirror.endpoints %}

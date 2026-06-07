@@ -1,7 +1,11 @@
 ---
-{% if rke2_registry_configs is defined %}
+{# Parse JSON-string vars (passed by `-e key=value` executors like dagger) back #}
+{# into structures; native list/dict values pass through unchanged.             #}
+{% set _configs = (rke2_registry_configs | from_yaml) if (rke2_registry_configs is defined and rke2_registry_configs is string) else (rke2_registry_configs | default({})) %}
+{% set _mirrors = (rke2_registry_mirrors | from_yaml) if (rke2_registry_mirrors is defined and rke2_registry_mirrors is string) else (rke2_registry_mirrors | default([])) %}
+{% if _configs %}
 configs:
-{% for cfg in rke2_registry_configs.values() %}
+{% for cfg in _configs.values() %}
   {{ cfg.name }}:
     auth:
       username: {{ cfg.username }}
@@ -9,9 +13,9 @@ configs:
 {% endfor %}
 {% endif %}
 
-{% if rke2_registry_mirrors is defined %}
+{% if _mirrors %}
 mirrors:
-{% for mirror in rke2_registry_mirrors %}
+{% for mirror in _mirrors %}
   "{{ mirror.name }}":
     endpoint:
 {% for ep in mirror.endpoints %}
