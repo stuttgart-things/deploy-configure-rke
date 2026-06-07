@@ -308,7 +308,7 @@ cat <<EOF > ./play.yaml
   vars:
     install_k3s: true
     k3s_state: present #absent
-    k3s_k8s_version: 1.31.1
+    k3s_k8s_version: 1.36.1
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true
@@ -380,7 +380,7 @@ cat <<EOF > ./play.yaml
   vars:
     install_k3s: true
     k3s_state: present #absent
-    k3s_k8s_version: 1.31.1
+    k3s_k8s_version: 1.36.1
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true
