@@ -38,10 +38,21 @@
 
 - name: Test if rke2 server is successfully deployed
   ansible.builtin.shell: |
-    kubectl get nodes --kubeconfig {{ rke2_kubeconfig_name }}
+    set -o pipefail
+    # 1) apiserver must actually be serving before node status can be trusted;
+    #    a cold/not-yet-ready apiserver makes kubectl exit non-zero -> retry.
+    kubectl get --raw='/readyz' --kubeconfig {{ rke2_kubeconfig_name }} >/dev/null 2>&1 || exit 1
+    # 2) node list must be non-empty (empty stdout previously false-passed).
+    statuses=$(kubectl get nodes --no-headers --kubeconfig {{ rke2_kubeconfig_name }} 2>/dev/null | awk '{print $2}')
+    [ -n "${statuses}" ] || exit 1
+    # 3) no node may be NotReady and at least one node must report Ready.
+    echo "${statuses}" | grep -qw NotReady && exit 1
+    echo "${statuses}" | grep -qw Ready
   args:
     chdir: "{{ rke2_config_dir }}"
+    executable: /bin/bash
   register: cmd_result
-  retries: 20
-  delay: 30
-  until: ("NotReady" not in cmd_result.stdout)
+  retries: "{{ rke2_ready_retries }}"
+  delay: "{{ rke2_ready_delay }}"
+  until: cmd_result.rc == 0
+  changed_when: false

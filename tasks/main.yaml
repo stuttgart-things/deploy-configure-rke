@@ -29,6 +29,7 @@
         url: "{{ rke2_airgapped_image_url }}"
         dest: "{{ rke2_airgapped_install_dir }}/{{ rke2_airgapped_archive }}"
         validate_certs: "{{ validate_certs }}"
+        checksum: "{{ rke2_airgapped_checksum | default(omit) }}"
 
   when: rke2_airgapped_installation|bool and not install_k3s and rke_state == "present"
 
