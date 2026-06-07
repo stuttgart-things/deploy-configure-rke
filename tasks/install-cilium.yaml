@@ -5,6 +5,20 @@
     - ansible.builtin.include_role:
         name: download-install-binary
 
+# Run cilium ops only against a stable apiserver. k3s has just started here, so
+# the API can still be flapping; installing/upgrading cilium against it can be
+# interrupted mid-operation and leave the Helm release stuck in pending-upgrade.
+- name: Wait for k8s apiserver to be ready before cilium
+  ansible.builtin.command: kubectl get --raw=/readyz
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: cilium_api_readyz
+  until: cilium_api_readyz.rc == 0
+  retries: "{{ cilium_api_ready_retries | default(30) }}"
+  delay: "{{ cilium_api_ready_delay | default(10) }}"
+  changed_when: false
+  when: inventory_hostname in groups['initial_master_node']
+
 - name: Install Gateway API CRDs
   ansible.builtin.command: >
     kubectl apply -f
