@@ -337,26 +337,42 @@ cat <<EOF > ./play.yaml
     cluster_setup: singlenode
     install_cillium: true
 
-    # --- air-gapped install -------------------------------------------------
-    # Pre-stage the images archive AND the k3s binary, then run the install
-    # script with INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream pull).
+    # --- air-gapped images (independent of the binary path) -----------------
+    # Pre-seed the images archive into /var/lib/rancher/k3s/agent/images/.
+    # IMAGES ONLY: the k3s binary + install script are still pulled normally.
     k3s_airgapped_installation: true
-
-    # Optional overrides (each defaults to the upstream release for the pinned
-    # version). Point them at a mirror / locally hosted artifact for a fully
-    # offline run:
+    # Point the archive at your mirror (e.g. a public S3/MinIO object):
     # k3s_airgapped_image_url: "https://your-host/k3s-airgap-images-amd64.tar.zst"
     # k3s_airgapped_archive: k3s-airgap-images-amd64.tar.zst
     # k3s_airgapped_install_dir: /var/lib/rancher/k3s/agent/images/
     # k3s_airgapped_checksum: "sha256:..."          # optional, verifies the archive
+
+    # --- offline binary (optional, independent of images) -------------------
+    # Set true to ALSO stage the k3s binary and run the install script with
+    # INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream binary pull). Leave false for
+    # an images-only air-gap where the host still has egress for the binary.
+    # k3s_airgapped_skip_download: true
     # k3s_airgapped_binary_url: "https://your-host/k3s"
     # k3s_airgapped_binary_dest: /usr/local/bin/k3s
     # k3s_airgapped_binary_checksum: "sha256:..."   # optional, verifies the binary
     # k3s_installscript_url: "https://your-host/k3s-install.sh"  # for zero egress
 
+    # --- registry pull-through mirror (writes /etc/rancher/k3s/registries.yaml) ---
+    k3s_registry_mirrors:
+      - name: "docker.io"
+        endpoints:
+          - "https://docker.harbor.example.com"
+          - "https://registry-1.docker.io"   # fallback
+    # k3s_registry_configs:            # optional auth / TLS per registry host
+    #   "docker.harbor.example.com":
+    #     username: "robot\$puller"
+    #     password: "<secret>"
+    #     tls:
+    #       insecure_skip_verify: false
+
     # SELinux toggles (default false). On air-gapped, SELinux-enforcing
     # RHEL-family hosts set both true so a missing k3s-selinux policy does not
-    # abort the offline install:
+    # abort the offline install (requires k3s_airgapped_skip_download):
     # k3s_skip_selinux_rpm: true   # never reach the package manager for k3s-selinux
     # k3s_selinux_warn: true       # missing SELinux policy -> warning instead of fatal
 

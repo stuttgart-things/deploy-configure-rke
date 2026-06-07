@@ -16,14 +16,25 @@
     src: "{{ k3s_config_template }}"
     dest: "{{ k3s_config_dir }}/{{ k3s_config_name }}"
 
+# registries.yaml must exist before k3s starts so mirrors/pull-through apply.
+- name: Configure k3s registries (mirrors / pull-through)
+  ansible.builtin.template:
+    src: k3s-registries.yaml.j2
+    dest: "{{ k3s_config_dir }}/registries.yaml"
+    owner: "{{ rke2_user_name }}"
+    group: "{{ rke2_user_group }}"
+    mode: "0644"
+  when: k3s_registry_mirrors is defined or k3s_registry_configs is defined
+
 - name: Install k3s-server service and the k3s binary
   ansible.builtin.shell: |
     curl -sfL {{ k3s_installscript_url }} | sh -s - --config={{ k3s_config_dir }}/{{ k3s_config_name }}
   environment:
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
-    # When air-gapped, the binary is pre-staged at k3s_airgapped_binary_dest and
-    # the install script skips the upstream download. "false" keeps default behaviour.
-    INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_installation | bool else 'false' }}"
+    # Offline binary: when k3s_airgapped_skip_download is set, the binary is
+    # pre-staged at k3s_airgapped_binary_dest and the install script skips the
+    # upstream download. "false" keeps the default (script downloads the binary).
+    INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_skip_download | bool else 'false' }}"
     INSTALL_K3S_SKIP_SELINUX_RPM: "{{ 'true' if k3s_skip_selinux_rpm | bool else 'false' }}"
     INSTALL_K3S_SELINUX_WARN: "{{ 'true' if k3s_selinux_warn | bool else 'false' }}"
   when: inventory_hostname in groups['initial_master_node']
@@ -54,7 +65,7 @@
     K3S_URL: "https://{{ k3s_master_ip[0] }}:6443"
     K3S_TOKEN: "{{ k3s_shared_token }}"
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
-    INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_installation | bool else 'false' }}"
+    INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_skip_download | bool else 'false' }}"
     INSTALL_K3S_SKIP_SELINUX_RPM: "{{ 'true' if k3s_skip_selinux_rpm | bool else 'false' }}"
     INSTALL_K3S_SELINUX_WARN: "{{ 'true' if k3s_selinux_warn | bool else 'false' }}"
   when: inventory_hostname in groups['additional_master_nodes']
