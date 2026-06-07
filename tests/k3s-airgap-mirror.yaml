@@ -1,0 +1,51 @@
+---
+# ----------------------------------------------------------------------------
+# Test: k3s (latest, v1.36.1+k3s1) single-node, with:
+#   * air-gapped IMAGES pulled from a public S3/MinIO mirror (images-only;
+#     the k3s binary + install script still come from upstream)
+#   * a docker.io pull-through MIRROR to harbor (with upstream fallback)
+#
+# Run:
+#   export ANSIBLE_ROLES_PATH=$(dirname "$PWD"):$HOME/.ansible/roles
+#   ansible-playbook -i tests/inventory-k3s-airgap.yaml tests/k3s-airgap-mirror.yaml -vv
+# ----------------------------------------------------------------------------
+- name: Deploy k3s (air-gapped images + pull-through mirror)
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: present
+    k3s_k8s_version: 1.36.1
+    k3s_release_kind: k3s1
+    cluster_setup: singlenode
+    install_cilium: true
+
+    # fetch the kubeconfig back to the control host for verification
+    fetched_kubeconfig_path: /tmp/k3s-airgap-test/kubeconfig
+
+    # --- air-gapped IMAGES from the public S3 mirror (images only) ----------
+    # Binary + install script still pulled from upstream (host has egress).
+    k3s_airgapped_installation: true
+    k3s_airgapped_skip_download: false
+    k3s_airgapped_image_url: "https://artifacts.platform.sthings-vsphere.labul.sva.de/airgap/k3s/v1.36.1-k3s1/k3s-airgap-images-amd64.tar.zst"
+    k3s_airgapped_checksum: "sha256:72cf836bfcf8f9af2de88102b69129d297b77a60243895a7ac4bc47d77a65079"
+    # For a FULLY offline run, also stage the binary from your mirror and flip:
+    # k3s_airgapped_skip_download: true
+    # k3s_airgapped_binary_url: "https://artifacts.platform.sthings-vsphere.labul.sva.de/airgap/k3s/v1.36.1-k3s1/k3s"
+
+    # --- docker.io pull-through mirror -> harbor (fallback to upstream) ------
+    k3s_registry_mirrors:
+      - name: "docker.io"
+        endpoints:
+          - "https://docker.harbor.platform.sthings-vsphere.labul.sva.de"
+          - "https://registry-1.docker.io"
+    # If harbor presents an untrusted cert, uncomment to skip verification:
+    # k3s_registry_configs:
+    #   "docker.harbor.platform.sthings-vsphere.labul.sva.de":
+    #     tls:
+    #       insecure_skip_verify: true
+
+  roles:
+    - role: deploy-configure-rke

@@ -1,0 +1,25 @@
+---
+# ----------------------------------------------------------------------------
+# Uninstall k3s via the role's absent path (runs k3s-uninstall.sh on the master).
+# Skips node-prep and kubeconfig fetch so only the removal runs.
+#
+# Run:
+#   export ANSIBLE_ROLES_PATH=$(dirname "$PWD"):$HOME/.ansible/roles
+#   ansible-playbook -i tests/inventory-k3s-airgap.yaml tests/k3s-uninstall.yaml -vv
+# ----------------------------------------------------------------------------
+- name: Uninstall k3s (absent)
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: absent
+    cluster_setup: singlenode
+    # nothing to prep / fetch / install on teardown
+    prepare_rancher_ha_nodes: false
+    fetch_kubeconfig: false
+    install_cilium: false
+
+  roles:
+    - role: deploy-configure-rke
