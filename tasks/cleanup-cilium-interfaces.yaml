@@ -1,0 +1,19 @@
+---
+# Cilium is installed out-of-band (cilium-cli) when used as the CNI, so the k3s /
+# rke2 uninstall scripts -- which only clean up their bundled CNI (flannel/canal) --
+# leave Cilium's datapath interfaces behind (cilium_host/cilium_net/cilium_vxlan,
+# and geneve/wireguard/health depending on config). Remove them on teardown.
+# Existence-guarded, so it is a safe no-op when Cilium was not used. Runs on every
+# node because the interfaces are per-node. Deleting cilium_host also removes its
+# veth peer cilium_net, so cilium_net is not listed explicitly.
+- name: Clean up leftover Cilium network interfaces
+  ansible.builtin.shell: |
+    deleted=""
+    for ifc in cilium_host cilium_vxlan cilium_geneve cilium_wg0 lxc_health; do
+      if ip link show "${ifc}" >/dev/null 2>&1; then
+        ip link delete "${ifc}" && deleted="${deleted} ${ifc}"
+      fi
+    done
+    [ -n "${deleted}" ] && echo "deleted:${deleted}" || echo "nothing to delete"
+  register: cilium_iface_cleanup
+  changed_when: "'deleted:' in cilium_iface_cleanup.stdout"

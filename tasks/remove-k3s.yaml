@@ -8,3 +8,6 @@
   ansible.builtin.shell: |
     sh {{ k3s_agent_uninstall_script }}
   when: inventory_hostname in groups['additional_master_nodes']
+
+- name: Clean up leftover Cilium interfaces
+  ansible.builtin.include_tasks: cleanup-cilium-interfaces.yaml
