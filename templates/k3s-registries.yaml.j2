@@ -1,0 +1,31 @@
+---
+{% if k3s_registry_configs is defined %}
+configs:
+{% for host, cfg in k3s_registry_configs.items() %}
+  "{{ host }}":
+{% if cfg.username is defined %}
+    auth:
+      username: {{ cfg.username }}
+      password: {{ cfg.password }}
+{% endif %}
+{% if cfg.tls is defined %}
+    tls:
+{% if cfg.tls.insecure_skip_verify is defined %}
+      insecure_skip_verify: {{ cfg.tls.insecure_skip_verify | string | lower }}
+{% endif %}
+{% if cfg.tls.ca_file is defined %}
+      ca_file: {{ cfg.tls.ca_file }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if k3s_registry_mirrors is defined %}
+mirrors:
+{% for mirror in k3s_registry_mirrors %}
+  "{{ mirror.name }}":
+    endpoint:
+{% for ep in mirror.endpoints %}
+      - "{{ ep }}"
+{% endfor %}
+{% endfor %}
+{% endif %}

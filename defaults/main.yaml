@@ -122,7 +122,9 @@ k3s_k8s_version: 1.36.1
 k3s_release_kind: k3s1
 k3s_version: "v{{ k3s_k8s_version }}+{{ k3s_release_kind }}"
 # k3s air-gapped image archive (mirrors the rke2_airgapped_* vars).
-# Disabled by default; set k3s_airgapped_installation: true to pre-seed images.
+# Disabled by default; set k3s_airgapped_installation: true to pre-seed the
+# images archive into k3s_airgapped_install_dir. This controls IMAGES ONLY and
+# is independent of the offline-binary path (k3s_airgapped_skip_download below).
 k3s_airgapped_installation: false
 k3s_airgapped_archive: k3s-airgap-images-amd64.tar.zst
 k3s_airgapped_install_dir: /var/lib/rancher/k3s/agent/images/
@@ -131,14 +133,31 @@ k3s_airgapped_install_dir: /var/lib/rancher/k3s/agent/images/
 k3s_airgapped_image_url: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_k8s_version }}%2B{{ k3s_release_kind }}/{{ k3s_airgapped_archive }}"
 # Optional checksum (e.g. "sha256:<hash>" or "sha256:<url>"); unset by default.
 # k3s_airgapped_checksum: "sha256:..."
-# Fully-offline binary install: when k3s_airgapped_installation is true the k3s
-# binary is fetched from k3s_airgapped_binary_url to k3s_airgapped_binary_dest and
-# the install script runs with INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream pull).
+# Offline binary install (independent of the images path above). When
+# k3s_airgapped_skip_download is true, the k3s binary is fetched from
+# k3s_airgapped_binary_url to k3s_airgapped_binary_dest and the install script
+# runs with INSTALL_K3S_SKIP_DOWNLOAD=true (no upstream binary pull). Leave false
+# to let the install script download the binary normally (e.g. images-only
+# air-gap where the host still has egress for the k3s binary + install script).
+k3s_airgapped_skip_download: false
 # Override k3s_airgapped_binary_url to a mirror/locally hosted binary as needed.
 k3s_airgapped_binary_url: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_k8s_version }}%2B{{ k3s_release_kind }}/k3s"
 k3s_airgapped_binary_dest: /usr/local/bin/k3s
 # Optional checksum for the k3s binary; unset by default.
 # k3s_airgapped_binary_checksum: "sha256:..."
+# k3s registry mirrors / pull-through (writes /etc/rancher/k3s/registries.yaml
+# before install when defined). Mirror docker.io to a harbor pull-through cache:
+#   k3s_registry_mirrors:
+#     - name: "docker.io"
+#       endpoints:
+#         - "https://docker.harbor.example.com"
+#   k3s_registry_configs:            # optional auth / TLS per registry host
+#     "docker.harbor.example.com":
+#       username: robot$puller
+#       password: "<secret>"
+#       tls:
+#         insecure_skip_verify: false   # set true to skip cert verification
+#         # ca_file: /etc/ssl/certs/harbor-ca.crt
 # SELinux toggles for the k3s install script (default false -> upstream behaviour
 # unchanged). On air-gapped SELinux-enforcing (RHEL-family) hosts set both true:
 #   k3s_skip_selinux_rpm -> INSTALL_K3S_SKIP_SELINUX_RPM, never reach the package
