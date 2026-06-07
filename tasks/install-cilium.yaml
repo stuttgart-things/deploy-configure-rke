@@ -54,4 +54,12 @@
     cilium status --wait
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  register: cilium_upgrade
+  # `cilium install` replaces kube-proxy and reconfigures the datapath, which can
+  # briefly drop the apiserver connection (connection refused / unexpected EOF).
+  # Retry so the upgrade rides through that transition instead of failing the run.
+  until: cilium_upgrade.rc == 0
+  retries: "{{ cilium_upgrade_retries | default(10) }}"
+  delay: "{{ cilium_upgrade_delay | default(15) }}"
+  changed_when: cilium_upgrade.rc == 0
   when: inventory_hostname in groups['initial_master_node']
