@@ -196,6 +196,11 @@ cilium_enable_gateway_api: true
 cilium_gateway_api_crds_version: v1.4.1
 cilium_rollout_pods: true
 cilium_config: cilium.yaml
+# Pod IPAM pool. MUST NOT overlap the node/infrastructure network (e.g. lab 10.31.0.0/16)
+# or Cilium routes pod->infra traffic into the overlay and black-holes it. cilium-cli's
+# default is 10.0.0.0/8, which collides with RFC1918 lab nets — override it here.
+cilium_cluster_pool_ipv4_cidr: 10.42.0.0/16
+cilium_cluster_pool_ipv4_mask_size: 24
 
 create_root_cert: true
 os_cert_path: /usr/local/share/ca-certificates
