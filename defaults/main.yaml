@@ -22,7 +22,7 @@ kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
 rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
-rke2_k8s_version: 1.35.0
+rke2_k8s_version: 1.36.1
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
@@ -44,7 +44,7 @@ fetched_kubeconfig_path: ./kubeconfig
 restart_rke2_already_running: true
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
-rke2_release_kind: rke2r3 #rke2r2 +rke2r1
+rke2_release_kind: rke2r2 #rke2r3 +rke2r1
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: false
 rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
@@ -70,9 +70,9 @@ install_kubectl: true
 install_helm: true
 
 install_cilium: true
-cilium_version: 0.19.0
-kubectl_version: v1.35.1
-helm_version: 4.1.1
+cilium_version: 0.19.4
+kubectl_version: v1.36.1
+helm_version: 4.2.0
 
 disableKubeProxy: false
 rke2_kube_proxy_file: /var/lib/rancher/rke2/agent/pod-manifests/kube-proxy.yaml
