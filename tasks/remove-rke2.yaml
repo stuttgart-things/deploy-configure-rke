@@ -15,3 +15,6 @@
     path: "{{ rke2_config_dir }}"
     state: absent
   tags: rke2_config
+
+- name: Clean up leftover Cilium interfaces
+  ansible.builtin.include_tasks: cleanup-cilium-interfaces.yaml
