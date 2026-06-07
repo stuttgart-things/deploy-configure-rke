@@ -13,6 +13,12 @@ k8sClientRateLimit:
   qps: 50
   burst: 200
 
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList:
+      - {{ cilium_cluster_pool_ipv4_cidr }}
+    clusterPoolIPv4MaskSize: {{ cilium_cluster_pool_ipv4_mask_size }}
+
 operator:
   replicas: {{ cilium_operator_replicas }}
   rollOutPods: {{ cilium_rollout_pods }}

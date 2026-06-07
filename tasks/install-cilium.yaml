@@ -53,6 +53,8 @@
       --set k8sServiceHost={{ cilium_api_server_ip }} \
       --set k8sServicePort={{ cilium_api_server_port }} \
       --set kubeProxyReplacement={{ cilium_kube_proxy_replacement }} \
+      --set ipam.operator.clusterPoolIPv4PodCIDRList='{{ "{" }}{{ cilium_cluster_pool_ipv4_cidr }}{{ "}" }}' \
+      --set ipam.operator.clusterPoolIPv4MaskSize={{ cilium_cluster_pool_ipv4_mask_size }} \
       --helm-set=operator.replicas={{ cilium_operator_replicas }}
     cilium status --wait
   environment:
