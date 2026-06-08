@@ -30,7 +30,7 @@
     - name: Import Cilium images into containerd
       ansible.builtin.command: >
         {{ cilium_ctr_cmd }} -a {{ rke2_containerd_sock }} -n k8s.io
-        images import {{ cilium_airgapped_archive_path }}
+        images import --digests {{ cilium_airgapped_archive_path }}
       register: cilium_image_import
       changed_when: "'unpacking' in cilium_image_import.stdout"
   when: cilium_airgapped_images | bool
