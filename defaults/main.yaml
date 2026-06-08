@@ -211,11 +211,19 @@ cilium_image_pull_policy: Always
 # node (the cilium agent DaemonSet runs cluster-wide). Pair with
 # cilium_image_pull_policy: Never to enforce a fully offline start.
 cilium_airgapped_images: false
-# Path to the Cilium images tar already present on the target node. Build it on a
-# connected host (e.g. `cilium images list` -> `docker save` / `ctr images export`)
-# and ship it to the device. An uncompressed .tar is safest; .zst/.gz require a
-# containerd `ctr` new enough to decompress on import.
-cilium_airgapped_archive_path: "/var/lib/rancher/cilium-images.tar"
+# HTTPS source for the Cilium images tar. Build the archive on a connected host
+# (e.g. `cilium images list` -> `docker save` / `ctr images export`), publish it to
+# an internal artifact store / release asset, and point this at it. Required when
+# cilium_airgapped_images is enabled. Mirrors rke2_airgapped_image_url.
+cilium_airgapped_image_url: ""
+# The tar is downloaded here on every node before import. An uncompressed .tar is
+# safest; .zst/.gz require a containerd `ctr` new enough to decompress on import.
+cilium_airgapped_install_dir: /var/lib/rancher/cilium-images
+cilium_airgapped_archive: cilium-images.tar
+cilium_airgapped_archive_path: "{{ cilium_airgapped_install_dir }}/{{ cilium_airgapped_archive }}"
+# Optional checksum (e.g. "sha256:<hash>" or "sha256:<url>") to verify the download
+# and fail loudly on truncation. Unset by default. Mirrors rke2_airgapped_checksum.
+# cilium_airgapped_checksum: "sha256:..."
 # ctr invocation used for the import. k3s ships `k3s ctr`; rke2 ships a ctr binary
 # under its bin dir. Both talk to the same socket (rke2_containerd_sock).
 cilium_ctr_cmd: "{{ 'k3s ctr' if install_k3s | bool else rke2_bin_dir ~ 'ctr' }}"

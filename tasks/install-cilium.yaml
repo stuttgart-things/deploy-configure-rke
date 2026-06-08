@@ -5,18 +5,34 @@
     - ansible.builtin.include_role:
         name: download-install-binary
 
-# Air-gapped/edge: import the pre-staged Cilium images tar into containerd before
-# the install/upgrade so the agent (DaemonSet, hence every node), operator and
-# envoy pods start from the local store. Runs on all hosts, not just the master.
-# Pair with cilium_image_pull_policy: Never in cilium-config.yaml.j2 to forbid any
-# pull attempt.
+# Air-gapped/edge: fetch the Cilium images tar from an HTTPS source and import it
+# into containerd before the install/upgrade, so the agent (DaemonSet, hence every
+# node), operator and envoy pods start from the local store. Runs on all hosts, not
+# just the master. Pair with cilium_image_pull_policy: Never in cilium-config.yaml.j2
+# to forbid any pull attempt.
 - name: Pre-load Cilium images from tar
-  ansible.builtin.command: >
-    {{ cilium_ctr_cmd }} -a {{ rke2_containerd_sock }} -n k8s.io
-    images import {{ cilium_airgapped_archive_path }}
   become: true
-  register: cilium_image_import
-  changed_when: "'unpacking' in cilium_image_import.stdout"
+  block:
+    - name: Create Cilium air-gapped image dir
+      ansible.builtin.file:
+        path: "{{ cilium_airgapped_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download Cilium images tar
+      ansible.builtin.get_url:
+        url: "{{ cilium_airgapped_image_url }}"
+        dest: "{{ cilium_airgapped_archive_path }}"
+        mode: "0644"
+        validate_certs: "{{ validate_certs }}"
+        checksum: "{{ cilium_airgapped_checksum | default(omit) }}"
+
+    - name: Import Cilium images into containerd
+      ansible.builtin.command: >
+        {{ cilium_ctr_cmd }} -a {{ rke2_containerd_sock }} -n k8s.io
+        images import {{ cilium_airgapped_archive_path }}
+      register: cilium_image_import
+      changed_when: "'unpacking' in cilium_image_import.stdout"
   when: cilium_airgapped_images | bool
 
 # Run cilium ops only against a stable apiserver. k3s has just started here, so
