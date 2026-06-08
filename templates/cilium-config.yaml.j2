@@ -3,6 +3,13 @@ k8sServiceHost: {{ cilium_api_server_ip }}
 k8sServicePort: {{ cilium_api_server_port }}
 kubeProxyReplacement: {{ cilium_kube_proxy_replacement }}
 
+# Pull policy for the Cilium agent image. On air-gapped/edge devices the images
+# are pre-loaded as a tar (cilium_airgapped_images) and this is set to "Never"
+# (or "IfNotPresent") so pods start from the local containerd store. Cilium has
+# no single global pull-policy key, so it is set per component below.
+image:
+  pullPolicy: {{ cilium_image_pull_policy }}
+
 l2announcements:
   enabled: true
 
@@ -22,6 +29,14 @@ ipam:
 operator:
   replicas: {{ cilium_operator_replicas }}
   rollOutPods: {{ cilium_rollout_pods }}
+  image:
+    pullPolicy: {{ cilium_image_pull_policy }}
+
+# Dedicated cilium-envoy DaemonSet (used by the ingress/gateway data path). The
+# key is harmless when Envoy runs embedded in the agent.
+envoy:
+  image:
+    pullPolicy: {{ cilium_image_pull_policy }}
 
 rollOutCiliumPods: {{ cilium_rollout_pods }}
 
