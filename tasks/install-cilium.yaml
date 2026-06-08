@@ -32,7 +32,14 @@
         {{ cilium_ctr_cmd }} -a {{ rke2_containerd_sock }} -n k8s.io
         images import --digests {{ cilium_airgapped_archive_path }}
       register: cilium_image_import
-      changed_when: "'unpacking' in cilium_image_import.stdout"
+      # ctr's import wording varies by tar format: `ctr images export` archives
+      # (what hack/export-cilium-images.sh produces) report "saved"; docker-save
+      # archives report "unpacking"/"unpacked". Match all so a real import isn't
+      # misreported as unchanged.
+      changed_when: >-
+        cilium_image_import.rc == 0 and
+        ('saved' in cilium_image_import.stdout
+         or 'unpack' in cilium_image_import.stdout)
   when: cilium_airgapped_images | bool
 
 # Run cilium ops only against a stable apiserver. k3s has just started here, so

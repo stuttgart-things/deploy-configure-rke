@@ -1,0 +1,56 @@
+---
+# ----------------------------------------------------------------------------
+# Test: k3s (v1.36.1+k3s1) single-node, with:
+#   * air-gapped k3s IMAGES from the public mirror (images-only; binary upstream)
+#   * docker.io pull-through MIRROR -> harbor (with upstream fallback)
+#   * Cilium AIR-GAPPED images: pre-loaded from a tar into containerd, with
+#     pullPolicy: Never so the agent/operator/envoy start from the local store
+#     instead of pulling quay.io.
+#
+# Run:
+#   export ANSIBLE_ROLES_PATH=$(dirname "$PWD"):$HOME/.ansible/roles
+#   ansible-playbook -i tests/inventory-k3s-airgap.yaml tests/k3s-cilium-airgap-mirror.yaml -vv
+# ----------------------------------------------------------------------------
+- name: Deploy k3s (air-gapped images + harbor mirror + Cilium image tar)
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    install_k3s: true
+    k3s_state: present
+    k3s_k8s_version: 1.36.1
+    k3s_release_kind: k3s1
+    cluster_setup: singlenode
+    install_cilium: true
+
+    # fetch the kubeconfig back to the control host for verification
+    fetched_kubeconfig_path: /tmp/k3s-cilium-airgap-test/kubeconfig
+
+    # --- air-gapped k3s IMAGES from the public mirror (images only) ---------
+    k3s_airgapped_installation: true
+    k3s_airgapped_skip_download: false
+    k3s_airgapped_image_url: "https://artifacts.platform.sthings-vsphere.labul.sva.de/airgap/k3s/v1.36.1-k3s1/k3s-airgap-images-amd64.tar.zst"
+    k3s_airgapped_checksum: "sha256:72cf836bfcf8f9af2de88102b69129d297b77a60243895a7ac4bc47d77a65079"
+
+    # --- docker.io pull-through mirror -> harbor (fallback to upstream) ------
+    k3s_registry_mirrors:
+      - name: "docker.io"
+        endpoints:
+          - "https://docker.harbor.platform.sthings-vsphere.labul.sva.de"
+          - "https://registry-1.docker.io"
+
+    # --- Cilium air-gapped images (the feature under test) ------------------
+    # Pre-load Cilium images from the tar into containerd, then pin pullPolicy
+    # so pods start offline from the local store. Checksum intentionally skipped.
+    cilium_airgapped_images: true
+    cilium_airgapped_image_url: "https://artifacts.platform.sthings-vsphere.labul.sva.de/airgap/cilium-images.tar"
+    cilium_image_pull_policy: Never
+
+    # Pod CIDR must not overlap the infra net (10.31.0.0/16). Defaults are fine
+    # (10.42.0.0/16, /24) but pinned here to make the test explicit.
+    cilium_cluster_pool_ipv4_cidr: 10.42.0.0/16
+    cilium_cluster_pool_ipv4_mask_size: 24
+
+  roles:
+    - role: deploy-configure-rke
