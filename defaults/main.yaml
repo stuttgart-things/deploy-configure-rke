@@ -196,6 +196,29 @@ cilium_enable_gateway_api: true
 cilium_gateway_api_crds_version: v1.4.1
 cilium_rollout_pods: true
 cilium_config: cilium.yaml
+# Pull policy applied to the Cilium components (agent/operator/envoy) via the
+# upgrade values file (templates/cilium-config.yaml.j2). Default "Always" keeps
+# the online behaviour; on edge/air-gapped devices set "Never" (strict, fails
+# loudly if an image is missing) or "IfNotPresent" together with the image
+# pre-load below. Note: only the `cilium upgrade -f` pass reads this file — the
+# initial `cilium install` uses cilium-cli's default (IfNotPresent), which already
+# uses a pre-loaded image without pulling.
+cilium_image_pull_policy: Always
+# Air-gapped / edge: pre-load the Cilium container images from a local tar into
+# containerd before install, so the agent/operator/envoy pods start without
+# reaching quay.io. Disabled by default (online pull). When enabled, the archive
+# at cilium_airgapped_archive_path is imported into the k8s.io namespace on every
+# node (the cilium agent DaemonSet runs cluster-wide). Pair with
+# cilium_image_pull_policy: Never to enforce a fully offline start.
+cilium_airgapped_images: false
+# Path to the Cilium images tar already present on the target node. Build it on a
+# connected host (e.g. `cilium images list` -> `docker save` / `ctr images export`)
+# and ship it to the device. An uncompressed .tar is safest; .zst/.gz require a
+# containerd `ctr` new enough to decompress on import.
+cilium_airgapped_archive_path: "/var/lib/rancher/cilium-images.tar"
+# ctr invocation used for the import. k3s ships `k3s ctr`; rke2 ships a ctr binary
+# under its bin dir. Both talk to the same socket (rke2_containerd_sock).
+cilium_ctr_cmd: "{{ 'k3s ctr' if install_k3s | bool else rke2_bin_dir ~ 'ctr' }}"
 # Pod IPAM pool. MUST NOT overlap the node/infrastructure network (e.g. lab 10.31.0.0/16)
 # or Cilium routes pod->infra traffic into the overlay and black-holes it. cilium-cli's
 # default is 10.0.0.0/8, which collides with RFC1918 lab nets — override it here.
