@@ -385,6 +385,79 @@ ansible-playbook -i inv play.yaml -vv
 
 </details>
 
+<details><summary>CILIUM AIR-GAPPED IMAGES</summary>
+
+Cilium here is installed via **cilium-cli**, which pulls its images directly from
+`quay.io`. On an edge / offline device those won't resolve, so the role can
+pre-load the Cilium images from a tar into containerd before install/upgrade and
+pin the pull policy so pods start from the local store. This is **independent**
+of the k3s/rke2 binary and `*_airgapped_installation` image paths — cilium-cli
+images are not covered by those.
+
+**Variables** (`defaults/main.yaml`):
+
+```yaml
+# Pull policy on agent/operator/envoy via the upgrade values file. Default
+# "Always" keeps online behaviour; set "Never" (strict) or "IfNotPresent" on edge.
+cilium_image_pull_policy: Always
+
+# Toggle the image pre-load. Off by default (online pull).
+cilium_airgapped_images: false
+# HTTPS source for the images tar (required when enabled). Mirrors rke2_airgapped_image_url.
+cilium_airgapped_image_url: ""
+# Where the tar is downloaded on every node before import.
+cilium_airgapped_install_dir: /var/lib/rancher/cilium-images
+cilium_airgapped_archive: cilium-images.tar
+cilium_airgapped_archive_path: "{{ cilium_airgapped_install_dir }}/{{ cilium_airgapped_archive }}"
+# Optional integrity check, fails loudly on truncation. Mirrors rke2_airgapped_checksum.
+# cilium_airgapped_checksum: "sha256:..."
+# ctr invocation for the import: "k3s ctr" on k3s, rke2's ctr binary on rke2 (auto).
+cilium_ctr_cmd: "{{ 'k3s ctr' if install_k3s | bool else rke2_bin_dir ~ 'ctr' }}"
+```
+
+When enabled, on **every node** (the agent is a DaemonSet) the role downloads
+the tar, then imports it into containerd's `k8s.io` namespace with
+`ctr images import --digests` before install/upgrade. Cilium has no single global
+pull-policy key, so the policy is set per component (agent/operator/envoy) in
+`templates/cilium-config.yaml.j2`. Note: only the `cilium upgrade -f` pass reads
+that file — the initial `cilium install` uses cilium-cli's default
+(`IfNotPresent`), which already uses a pre-loaded image without pulling.
+
+**Build the archive** — `hack/export-cilium-images.sh` exports the running
+Cilium images (with digests) straight from a node that already has them, no
+internet needed:
+
+```bash
+# on a node already running Cilium (k3s default; override CTR/KUBECONFIG for rke2):
+sudo ./hack/export-cilium-images.sh                # -> cilium-images.tar + .sha256
+sudo CTR="/var/lib/rancher/rke2/bin/ctr" ./hack/export-cilium-images.sh   # rke2
+
+# manual equivalent:
+mapfile -t IMAGES < <(k3s ctr -n k8s.io images ls -q | grep -i cilium | grep -v '^sha256:' | sort -u)
+k3s ctr -n k8s.io images export cilium-images.tar "${IMAGES[@]}"
+sha256sum cilium-images.tar | tee cilium-images.tar.sha256
+```
+
+Cilium image refs are digest-pinned (`<name>@sha256:...`), so the script lists
+them from containerd's store rather than the pod spec — the pod's combined
+`tag@sha256:...` form is not a stored reference and `ctr export` rejects it.
+Importing with `--digests` recreates those digest refs so kubelet resolves the
+pinned reference under `pullPolicy: Never`.
+
+Publish the tar to your mirror and enable on the edge nodes:
+
+```yaml
+cilium_airgapped_images: true
+cilium_airgapped_image_url: "https://your-host/cilium-images.tar"
+cilium_image_pull_policy: Never
+# cilium_airgapped_checksum: "sha256:<from cilium-images.tar.sha256>"
+```
+
+For RKE2 edge nodes, also set `rke2_cni: none` so cilium-cli (not RKE2's bundled
+CNI) manages Cilium.
+
+</details>
+
 <details><summary>EXAMPLE K3S PLAYBOOK w/ ADDONS</summary>
 
 ```bash
