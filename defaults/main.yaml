@@ -193,6 +193,15 @@ cilium_kube_proxy_replacement: true
 cilium_operator_replicas: 1
 cilium_enable_ingress: false
 cilium_enable_gateway_api: true
+# HTTP/2 ALPN on the Gateway's TLS listeners. Without it the listener negotiates
+# no ALPN, and gRPC clients built with grpc-go >= 1.67 abort the TLS handshake
+# ("missing selected ALPN property") -- GRPCRoutes through the Gateway are then
+# unusable from current Go clients, while older ones (grpcurl on grpc 1.61) still
+# connect and hide the problem. Only rendered with cilium_enable_gateway_api.
+cilium_gateway_api_enable_alpn: true
+# Honour Service port appProtocol (e.g. kubernetes.io/h2c) for Gateway backends,
+# so Envoy speaks HTTP/2 cleartext to a gRPC backend.
+cilium_gateway_api_enable_app_protocol: true
 cilium_gateway_api_crds_version: v1.4.1
 cilium_rollout_pods: true
 cilium_config: cilium.yaml

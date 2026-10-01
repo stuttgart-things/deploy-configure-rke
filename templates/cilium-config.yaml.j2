@@ -45,3 +45,8 @@ ingressController:
 
 gatewayAPI:
   enabled: {{ cilium_enable_gateway_api }}
+{% if cilium_enable_gateway_api | bool %}
+  # h2 via ALPN on TLS listeners -- required by grpc-go >= 1.67 clients.
+  enableAlpn: {{ cilium_gateway_api_enable_alpn }}
+  enableAppProtocol: {{ cilium_gateway_api_enable_app_protocol }}
+{% endif %}

@@ -458,6 +458,40 @@ CNI) manages Cilium.
 
 </details>
 
+<details><summary>CILIUM GATEWAY API: ALPN FOR gRPC</summary>
+
+With `cilium_enable_gateway_api: true` the role also renders
+
+```yaml
+cilium_gateway_api_enable_alpn: true          # gatewayAPI.enableAlpn
+cilium_gateway_api_enable_app_protocol: true  # gatewayAPI.enableAppProtocol
+```
+
+Without `enableAlpn` the Gateway's HTTPS listeners negotiate **no ALPN**. gRPC
+clients built with grpc-go >= 1.67 then abort the TLS handshake:
+
+```
+credentials: cannot check peer: missing selected ALPN property
+```
+
+so a `GRPCRoute` is unusable from any current Go client. Older clients (e.g.
+grpcurl built on grpc 1.61) do not check ALPN and keep working, which hides the
+problem. `enableAppProtocol` makes Envoy honour a backend Service port's
+`appProtocol: kubernetes.io/h2c`.
+
+Check a listener:
+
+```bash
+echo | openssl s_client -connect <host>:443 -servername <host> -alpn h2 2>/dev/null | grep -i alpn
+# ALPN protocol: h2        <- ok
+# No ALPN negotiated       <- enableAlpn is off
+```
+
+Takes effect on the `cilium upgrade -f` pass of the next playbook run; agent,
+operator and envoy roll out again.
+
+</details>
+
 <details><summary>EXAMPLE K3S PLAYBOOK w/ ADDONS</summary>
 
 ```bash
