@@ -17,4 +17,4 @@ roles:
     version: 2024.04.25
   - src: https://github.com/stuttgart-things/install-configure-docker.git
     scm: git
-    version: 2024.04.30
+    version: 2024.12.30
