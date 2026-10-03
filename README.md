@@ -308,7 +308,7 @@ cat <<EOF > ./play.yaml
   vars:
     install_k3s: true
     k3s_state: present #absent
-    k3s_k8s_version: 1.36.1
+    k3s_k8s_version: 1.36.5
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true
@@ -332,7 +332,7 @@ cat <<EOF > ./play.yaml
   vars:
     install_k3s: true
     k3s_state: present #absent
-    k3s_k8s_version: 1.36.1
+    k3s_k8s_version: 1.36.5
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true
@@ -458,6 +458,33 @@ CNI) manages Cilium.
 
 </details>
 
+<details><summary>CILIUM VERSION (cilium-cli vs. Cilium)</summary>
+
+`cilium_version` is the **cilium-cli** version. `cilium install` / `cilium upgrade`
+deploy whatever Cilium release that CLI build defaults to, so bumping the CLI
+also moves Cilium on the next run:
+
+| cilium-cli | default Cilium (`cilium version --client`) |
+|------------|--------------------------------------------|
+| 0.19.4     | 1.19.3                                     |
+| 0.19.7     | 1.19.5                                     |
+| 0.20.1     | 1.20.1                                     |
+
+Pin Cilium independently with `cilium_chart_version` (passed as `--version` to
+both install and upgrade; empty = CLI default):
+
+```yaml
+cilium_version: 0.19.7          # cilium-cli
+cilium_chart_version: "1.19.8"  # Cilium itself -- quote it
+cilium_gateway_api_crds_version: v1.4.1  # Cilium 1.19.x supports Gateway API v1.4.1
+```
+
+Keep `cilium_gateway_api_crds_version` on the Gateway API version the Cilium minor
+documents (1.19 -> v1.4.1, 1.20 -> v1.6.1). Cilium 1.20 also needs the CRDs
+applied server-side, which this role does not do yet.
+
+</details>
+
 <details><summary>CILIUM GATEWAY API: ALPN FOR gRPC</summary>
 
 With `cilium_enable_gateway_api: true` the role also renders
@@ -503,7 +530,7 @@ cat <<EOF > ./play.yaml
   vars:
     install_k3s: true
     k3s_state: present #absent
-    k3s_k8s_version: 1.36.1
+    k3s_k8s_version: 1.36.5
     k3s_release_kind: k3s1
     cluster_setup: singlenode
     install_cillium: true

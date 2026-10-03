@@ -22,7 +22,7 @@ kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
 rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
-rke2_k8s_version: 1.36.1
+rke2_k8s_version: 1.36.5
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
@@ -44,7 +44,9 @@ fetched_kubeconfig_path: ./kubeconfig
 restart_rke2_already_running: true
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
-rke2_release_kind: rke2r2 #rke2r3 +rke2r1
+# Must match a real tag together with rke2_k8s_version: v1.36.5 only exists as
+# +rke2r1 (rke2r2 was a 1.36.1-only respin).
+rke2_release_kind: rke2r1
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: false
 rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
@@ -70,9 +72,19 @@ install_kubectl: true
 install_helm: true
 
 install_cilium: true
-cilium_version: 0.19.4
-kubectl_version: v1.36.1
-helm_version: 4.2.0
+# cilium-cli version. Without cilium_chart_version, `cilium install`/`upgrade`
+# deploy the Cilium release this CLI build defaults to (`cilium version --client`):
+# cli 0.19.7 -> Cilium 1.19.5. Bumping the CLI therefore also moves Cilium on the
+# next run unless cilium_chart_version is set.
+cilium_version: 0.19.7
+# Optional explicit Cilium (chart) version, e.g. "1.19.8" (quote it: an unquoted
+# 1.20 is the float 1.2). Passed as --version to
+# both `cilium install` and `cilium upgrade` when non-empty; empty keeps the
+# cilium-cli default. Keep cilium_gateway_api_crds_version in line with it
+# (Cilium 1.19 -> Gateway API v1.4.1).
+cilium_chart_version: ""
+kubectl_version: v1.36.5
+helm_version: 4.2.4
 
 disableKubeProxy: false
 rke2_kube_proxy_file: /var/lib/rancher/rke2/agent/pod-manifests/kube-proxy.yaml
@@ -118,7 +130,7 @@ helm_binary:
 install_k3s: false
 k3s_state: absent
 k3s_installscript_url: https://get.k3s.io
-k3s_k8s_version: 1.36.1
+k3s_k8s_version: 1.36.5
 k3s_release_kind: k3s1
 k3s_version: "v{{ k3s_k8s_version }}+{{ k3s_release_kind }}"
 # k3s air-gapped image archive (mirrors the rke2_airgapped_* vars).
@@ -167,6 +179,13 @@ k3s_airgapped_binary_dest: /usr/local/bin/k3s
 k3s_skip_selinux_rpm: false
 k3s_selinux_warn: false
 k3s_path_to_generated_token: /var/lib/rancher/k3s/server/node-token
+# Re-run guard for the server install (tasks/deploy-k3s.yaml): the install script
+# only runs when the unit is missing, the installed version differs from
+# k3s_version, the config/registries file changed or an offline binary was
+# staged. Set k3s_force_reinstall: true to run it (and restart k3s) anyway.
+k3s_force_reinstall: false
+k3s_binary_path: /usr/local/bin/k3s
+k3s_server_unit_path: /etc/systemd/system/k3s.service
 k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
 k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
 k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh
@@ -202,6 +221,11 @@ cilium_gateway_api_enable_alpn: true
 # Honour Service port appProtocol (e.g. kubernetes.io/h2c) for Gateway backends,
 # so Envoy speaks HTTP/2 cleartext to a gRPC backend.
 cilium_gateway_api_enable_app_protocol: true
+# Gateway API CRDs (standard channel) applied before Cilium. Must be the version
+# the deployed Cilium minor supports (Cilium docs, "Gateway API Support"):
+# Cilium 1.19.x -> v1.4.1. Cilium 1.20.x needs v1.6.1, whose CRDs upstream says to
+# apply server-side; this task applies client-side, so moving to 1.20 is a
+# separate change.
 cilium_gateway_api_crds_version: v1.4.1
 cilium_rollout_pods: true
 cilium_config: cilium.yaml

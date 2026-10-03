@@ -23,7 +23,7 @@
     create_namespace: true
     state: "{{ helm_state }}"
     values: "{{ lookup('template', 'helm-values.yaml.j2') | from_yaml }}"
-    wait: "{{ item.values.wait | default(omit) }}"
+    wait: "{{ item.value.wait | default(omit) }}"
   loop: "{{ q('ansible.builtin.dict', helm_releases) }}"
   when: inventory_hostname in groups['initial_master_node'] and helm_releases is defined
   ignore_errors: "{{ item.value.ignore | default(omit) }}"

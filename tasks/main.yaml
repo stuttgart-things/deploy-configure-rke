@@ -64,6 +64,7 @@
         mode: "0755"
         validate_certs: "{{ validate_certs }}"
         checksum: "{{ k3s_airgapped_binary_checksum | default(omit) }}"
+      register: k3s_airgapped_binary_download
       when: k3s_airgapped_skip_download | bool
 
   when:
@@ -83,8 +84,11 @@
   ansible.builtin.fetch:
     src: "{{ kubeconfig_path }}"
     dest: "{{ fetched_kubeconfig_path }}"
-    flat: yes
-    run_once: true
+    flat: true
+  # No run_once: it sat inside the fetch args, where the fetch action silently
+  # ignored it. The when below already limits this to the initial master, and a
+  # task-level run_once would skip the fetch whenever the first host of the play
+  # is not that master.
   when: inventory_hostname in groups['initial_master_node'] and fetch_kubeconfig|bool
 
 #- name: Copy kubeconfig
