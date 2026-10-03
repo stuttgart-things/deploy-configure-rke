@@ -22,7 +22,7 @@ kubeconfig_mode_644: true
 rke2_type: server
 rke2_imagelist: rke2-images-all.linux-amd64.txt
 rke2_imagelist_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_imagelist }}"
-rke2_k8s_version: 1.36.1
+rke2_k8s_version: 1.36.5
 rke2_version: "v{{ rke2_k8s_version }}+{{ rke2_release_kind }}"
 rke2_channel: stable
 rke2_channel_url: https://update.rke2.io/v1-release/channels
@@ -44,7 +44,9 @@ fetched_kubeconfig_path: ./kubeconfig
 restart_rke2_already_running: true
 rke2_path_to_generated_token: "{{ rke_dir }}/server/node-token"
 rke2_additional_manifests_path: "{{ rke_dir }}/server/manifests"
-rke2_release_kind: rke2r2 #rke2r3 +rke2r1
+# Must match a real tag together with rke2_k8s_version: v1.36.5 only exists as
+# +rke2r1 (rke2r2 was a 1.36.1-only respin).
+rke2_release_kind: rke2r1
 rke2_airgapped_image_url: "https://github.com/rancher/rke2/releases/download/v{{ rke2_k8s_version }}%2B{{ rke2_release_kind }}/{{ rke2_airgapped_archive }}"
 rke2_airgapped_installation: false
 rke2_airgapped_install_dir: "{{ rke_dir }}/agent/images/"
@@ -70,9 +72,24 @@ install_kubectl: true
 install_helm: true
 
 install_cilium: true
-cilium_version: 0.19.4
-kubectl_version: v1.36.1
-helm_version: 4.2.0
+# cilium-cli version. Without cilium_chart_version, `cilium install`/`upgrade`
+# deploy the Cilium release this CLI build defaults to (`cilium version --client`):
+# cli 0.19.4 -> 1.19.3, 0.19.7 -> 1.19.5, 0.20.1 -> 1.20.1. Bumping the CLI
+# therefore also moves Cilium on the next run unless cilium_chart_version is set.
+# Cilium 1.20 is the first line that lists k8s 1.35/1.36 as tested (1.19: 1.31-1.34).
+# The default stays on the 1.19 line on purpose: existing clusters that don't pin
+# cilium_version (e.g. RKE2 homerun2-dev, machinery-hv) take this default on every
+# run, and 1.19 -> 1.20 is a minor upgrade with Gateway API v1.6.1 as a hard
+# requirement. Opt in per cluster: cilium_version 0.20.1 + cilium_chart_version
+# "1.20.2" + cilium_gateway_api_crds_version v1.6.1.
+cilium_version: 0.19.7
+# Optional explicit Cilium (chart) version, e.g. "1.20.2". Passed as --version to
+# both `cilium install` and `cilium upgrade` when non-empty (the upgrade needs it
+# too, or it would move Cilium back to the CLI default); empty keeps the cilium-cli
+# default. Quote it in YAML. Keep cilium_gateway_api_crds_version in line with it.
+cilium_chart_version: ""
+kubectl_version: v1.36.5
+helm_version: 4.2.4
 
 disableKubeProxy: false
 rke2_kube_proxy_file: /var/lib/rancher/rke2/agent/pod-manifests/kube-proxy.yaml
@@ -118,7 +135,7 @@ helm_binary:
 install_k3s: false
 k3s_state: absent
 k3s_installscript_url: https://get.k3s.io
-k3s_k8s_version: 1.36.1
+k3s_k8s_version: 1.36.5
 k3s_release_kind: k3s1
 k3s_version: "v{{ k3s_k8s_version }}+{{ k3s_release_kind }}"
 # k3s air-gapped image archive (mirrors the rke2_airgapped_* vars).
@@ -167,6 +184,13 @@ k3s_airgapped_binary_dest: /usr/local/bin/k3s
 k3s_skip_selinux_rpm: false
 k3s_selinux_warn: false
 k3s_path_to_generated_token: /var/lib/rancher/k3s/server/node-token
+# Re-run guard for the server install (tasks/deploy-k3s.yaml): the install script
+# only runs when the unit is missing, the installed version differs from
+# k3s_version, the config/registries file changed or an offline binary was
+# staged. Set k3s_force_reinstall: true to run it (and restart k3s) anyway.
+k3s_force_reinstall: false
+k3s_binary_path: /usr/local/bin/k3s
+k3s_server_unit_path: /etc/systemd/system/k3s.service
 k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
 k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
 k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh
@@ -178,11 +202,17 @@ k3s_config_name: k3s-config.yaml
 k3s_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
 
 kubeconfig_path: "{{ k3s_kubeconfig_path if install_k3s|bool else rke2_kubeconfig_path }}"
+# k3s datastore. true (default) = embedded etcd (`cluster-init: true`), required to
+# add more servers later. false = sqlite/kine: lighter on CPU, RAM and disk writes,
+# meant for single-node edge boxes, but can't grow into an HA cluster. Choose it
+# before the FIRST install: flipping it on an existing node does not migrate the
+# datastore. Accepts a bool or the strings "true"/"false" (-e k3s_cluster_init=false).
+k3s_cluster_init: true
 k3s_config:
   flannel_backend: none
   disable_kube_proxy: true
   disable_network_policy: true
-  cluster_init: true
+  cluster_init: "{{ k3s_cluster_init }}"
   disable:
     - servicelb
     - traefik
@@ -202,7 +232,18 @@ cilium_gateway_api_enable_alpn: true
 # Honour Service port appProtocol (e.g. kubernetes.io/h2c) for Gateway backends,
 # so Envoy speaks HTTP/2 cleartext to a gRPC backend.
 cilium_gateway_api_enable_app_protocol: true
+# Gateway API CRDs (standard-install.yaml of this release) applied server-side
+# before Cilium. Must be the version the deployed Cilium minor supports (Cilium
+# docs, "Gateway API Support"): Cilium 1.19.1+ -> v1.4.1, Cilium 1.20.x -> v1.6.1
+# (a hard minimum for 1.20: TLSRoute moved to v1). Match it to cilium_version /
+# cilium_chart_version. One-way: v1.6.x installs the ValidatingAdmissionPolicy
+# safe-upgrades.gateway.networking.k8s.io, which rejects CRDs older than v1.5.0,
+# so a cluster can't be moved back to v1.4.1 without deleting that policy first.
 cilium_gateway_api_crds_version: v1.4.1
+# Field manager for the server-side apply of the Gateway API CRDs. Applied with
+# --force-conflicts so CRDs that an older role version applied client-side
+# (field manager kubectl-client-side-apply) are taken over and upgraded.
+cilium_gateway_api_crds_field_manager: deploy-configure-rke
 cilium_rollout_pods: true
 cilium_config: cilium.yaml
 # Pull policy applied to the Cilium components (agent/operator/envoy) via the

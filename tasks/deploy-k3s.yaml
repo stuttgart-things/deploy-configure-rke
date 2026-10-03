@@ -15,6 +15,7 @@
   ansible.builtin.template:
     src: "{{ k3s_config_template }}"
     dest: "{{ k3s_config_dir }}/{{ k3s_config_name }}"
+  register: k3s_config_file
 
 # registries.yaml must exist before k3s starts so mirrors/pull-through apply.
 - name: Configure k3s registries (mirrors / pull-through)
@@ -24,7 +25,25 @@
     owner: "{{ rke2_user_name }}"
     group: "{{ rke2_user_group }}"
     mode: "0644"
+  register: k3s_registries_file
   when: k3s_registry_mirrors is defined or k3s_registry_configs is defined
+
+# The install script always ends with `systemctl restart k3s`, so running it on
+# every play restarted the apiserver on each re-run. Only run it when something
+# it owns would change: no server unit yet, a different k3s version, a changed
+# config/registries file, or a freshly staged offline binary.
+- name: Check installed k3s version
+  ansible.builtin.command: "{{ k3s_binary_path }} --version"
+  register: k3s_installed_version
+  failed_when: false
+  changed_when: false
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Check k3s server unit
+  ansible.builtin.stat:
+    path: "{{ k3s_server_unit_path }}"
+  register: k3s_server_unit
+  when: inventory_hostname in groups['initial_master_node']
 
 - name: Install k3s-server service and the k3s binary
   ansible.builtin.shell: |
@@ -37,11 +56,21 @@
     INSTALL_K3S_SKIP_DOWNLOAD: "{{ 'true' if k3s_airgapped_skip_download | bool else 'false' }}"
     INSTALL_K3S_SKIP_SELINUX_RPM: "{{ 'true' if k3s_skip_selinux_rpm | bool else 'false' }}"
     INSTALL_K3S_SELINUX_WARN: "{{ 'true' if k3s_selinux_warn | bool else 'false' }}"
-  when: inventory_hostname in groups['initial_master_node']
+  when:
+    - inventory_hostname in groups['initial_master_node']
+    - >-
+      k3s_force_reinstall | bool
+      or not k3s_server_unit.stat.exists
+      or k3s_installed_version.rc != 0
+      or (k3s_version ~ ' ') not in (k3s_installed_version.stdout ~ ' ')
+      or k3s_config_file is changed
+      or (k3s_registries_file | default({})) is changed
+      or (k3s_airgapped_binary_download | default({})) is changed
 
 - name: Read k3s token from inital master
-  ansible.builtin.shell: cat {{ k3s_path_to_generated_token }}
+  ansible.builtin.command: cat {{ k3s_path_to_generated_token }}
   register: k3s_token
+  changed_when: false
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Set k3s token from inital master

@@ -13,8 +13,10 @@ image:
 l2announcements:
   enabled: true
 
-externalIPs:
-  enabled: true
+# No `externalIPs.enabled`: the chart has no such key since Cilium 1.18 (it was
+# silently ignored by 1.19 and 1.20). With kubeProxyReplacement, Service
+# externalIPs are handled by default; L2 announcement of them is the
+# CiliumL2AnnouncementPolicy's `externalIPs: true`.
 
 k8sClientRateLimit:
   qps: 50
