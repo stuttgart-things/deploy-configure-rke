@@ -8,24 +8,49 @@
   when: install_cilium|bool and inventory_hostname in groups['initial_master_node']
 
 - name: Create (testing) root certificate
+  # Idempotent: the CA is generated once and then reused. The OS trust store and
+  # the cert-manager root-ca secret are converged to the files on the node, so a
+  # secret that drifted from the node's CA (pre-fix behaviour) is corrected.
+  vars:
+    root_ca_trust_dir: "{{ '/etc/pki/ca-trust/source/anchors' if ansible_facts['os_family'] == 'RedHat' else '/usr/local/share/ca-certificates' }}"
+  when: create_root_cert|bool and inventory_hostname in groups['initial_master_node']
   block:
-    - name: Generate self-signed certificate
+    - name: Generate self-signed root CA (only if absent)
       ansible.builtin.shell: |
-        openssl genrsa -out {{ root_ca_key }} 2048
+        set -e
+        (umask 077 && openssl genrsa -out {{ root_ca_key }} 2048)
         openssl req -x509 -new -nodes -key {{ root_ca_key }} \
           -days 3650 -sha256 -out {{ root_ca }} -subj "{{ root_cert_subject }}"
-        cp {{ root_ca }} {{ os_cert_path }}/k3s-ca.crt
-        {{ update_cert_command }}
-      vars:
-        os_cert_path: "{{ '/etc/pki/ca-trust/source/anchors' if ansible_facts['os_family'] == 'RedHat' else '/usr/local/share/ca-certificates' }}"
-        update_cert_command: "{{ 'update-ca-trust extract' if ansible_facts['os_family'] == 'RedHat' else 'update-ca-certificates' }}"
+      args:
+        creates: "{{ root_ca }}"
 
-    - name: Create cert-manager namespace and secret
+    - name: Add root CA to the OS trust store
+      ansible.builtin.copy:
+        src: "{{ root_ca }}"
+        dest: "{{ root_ca_trust_dir }}/k3s-ca.crt"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Update OS trust store (k3s root CA)
+
+    - name: Ensure cert-manager namespace exists
       ansible.builtin.shell: |
-        kubectl create ns cert-manager || true
-        kubectl create secret tls -n cert-manager root-ca \
-        --cert={{ root_ca }} --key={{ root_ca_key }} || true
+        kubectl get namespace cert-manager >/dev/null 2>&1 || kubectl create namespace cert-manager
+      register: root_ca_namespace
+      changed_when: "'created' in root_ca_namespace.stdout"
       environment:
         KUBECONFIG: "{{ k3s_kubeconfig_path }}"
 
-  when: create_root_cert|bool and inventory_hostname in groups['initial_master_node']
+    - name: Apply cert-manager root-ca secret
+      ansible.builtin.shell: |
+        set -o pipefail
+        kubectl create secret tls root-ca -n cert-manager \
+          --cert={{ root_ca }} --key={{ root_ca_key }} \
+          --dry-run=client -o yaml | kubectl apply -f -
+      args:
+        executable: /bin/bash
+      register: root_ca_secret
+      changed_when: "'created' in root_ca_secret.stdout or 'configured' in root_ca_secret.stdout"
+      environment:
+        KUBECONFIG: "{{ k3s_kubeconfig_path }}"
