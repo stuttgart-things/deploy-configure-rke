@@ -458,7 +458,7 @@ CNI) manages Cilium.
 
 </details>
 
-<details><summary>CILIUM VERSION (cilium-cli vs. Cilium)</summary>
+<details><summary>CILIUM VERSION (cilium-cli vs. Cilium) AND GATEWAY API CRDs</summary>
 
 `cilium_version` is the **cilium-cli** version. `cilium install` / `cilium upgrade`
 deploy whatever Cilium release that CLI build defaults to, so bumping the CLI
@@ -467,21 +467,56 @@ also moves Cilium on the next run:
 | cilium-cli | default Cilium (`cilium version --client`) |
 |------------|--------------------------------------------|
 | 0.19.4     | 1.19.3                                     |
-| 0.19.7     | 1.19.5                                     |
+| 0.19.7     | 1.19.5 (role default)                      |
 | 0.20.1     | 1.20.1                                     |
 
-Pin Cilium independently with `cilium_chart_version` (passed as `--version` to
-both install and upgrade; empty = CLI default):
+Pin Cilium independently with `cilium_chart_version`. It is passed as `--version`
+to both install and upgrade (the upgrade needs it too, or it would move Cilium
+back to the CLI default). Empty means the CLI default.
+
+The Gateway API CRDs (`standard-install.yaml` of `cilium_gateway_api_crds_version`)
+must match the Cilium minor:
+
+| Cilium        | Gateway API CRDs | note |
+|---------------|------------------|------|
+| 1.19.1 - 1.19.x | v1.4.1 (role default) | TLSRoute experimental, not in standard |
+| 1.20.x        | v1.6.1 | hard minimum; TLSRoute moved to v1 |
+
+The CRDs are applied **server-side** (`--server-side --force-conflicts
+--field-manager=deploy-configure-rke`). CRDs that an older role version applied
+client-side are taken over and upgraded in place. A server-side `kubectl diff`
+runs first, so an in-sync cluster reports `ok`, not `changed`.
+
+Moving to v1.6.x is **one-way**. It installs the ValidatingAdmissionPolicy
+`safe-upgrades.gateway.networking.k8s.io`, which rejects CRDs older than v1.5.0.
+If you used TLSRoute `v1alpha2` objects (experimental channel), read the Cilium 1.20
+upgrade notes before switching: the v1.6 standard TLSRoute no longer serves v1alpha2.
+
+The defaults stay on Cilium 1.19 + v1.4.1, so existing clusters that don't pin
+these vars only get a patch upgrade on their next run. Opt in to 1.20 per cluster
+(Cilium 1.20 is the first line whose docs list k8s 1.35/1.36 as tested):
 
 ```yaml
-cilium_version: 0.19.7          # cilium-cli
-cilium_chart_version: "1.19.8"  # Cilium itself -- quote it
-cilium_gateway_api_crds_version: v1.4.1  # Cilium 1.19.x supports Gateway API v1.4.1
+cilium_version: 0.20.1
+cilium_chart_version: "1.20.2"            # quote it
+cilium_gateway_api_crds_version: v1.6.1
 ```
 
-Keep `cilium_gateway_api_crds_version` on the Gateway API version the Cilium minor
-documents (1.19 -> v1.4.1, 1.20 -> v1.6.1). Cilium 1.20 also needs the CRDs
-applied server-side, which this role does not do yet.
+</details>
+
+<details><summary>K3S DATASTORE: ETCD OR SQLITE</summary>
+
+`k3s_cluster_init` (default `true`) feeds `k3s_config.cluster_init`, which renders
+as `cluster-init:` in the k3s config:
+
+- `true`: embedded etcd. Required to add more servers later.
+- `false`: sqlite/kine. Lighter on CPU, RAM and disk writes. Meant for single-node
+  edge boxes. Cannot grow into an HA cluster.
+
+Both a bool and the string form work (`-e k3s_cluster_init=false`, or the
+space-separated parameter string). Choose it before the **first** install:
+changing it on an existing node does not migrate the datastore. A changed
+k3s config file does trigger the install script, and with it a k3s restart.
 
 </details>
 

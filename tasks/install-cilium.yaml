@@ -56,17 +56,40 @@
   changed_when: false
   when: inventory_hostname in groups['initial_master_node']
 
+# Gateway API CRDs are applied server-side (Cilium 1.20 / Gateway API v1.6 docs)
+# with a dedicated field manager. --force-conflicts takes over the fields that an
+# older role version applied client-side, so v1.4.1 -> v1.6.1 upgrades in place.
+# `kubectl apply --server-side` prints "serverside-applied" for every object even
+# when nothing changes, so a server-side diff decides whether to apply at all:
+# rc 0 = in sync (skip, ok), rc 1 = differs (apply, changed), rc >1 = diff could
+# not run (apply anyway rather than fail).
 - name: Install Gateway API CRDs
-  ansible.builtin.command: >
-    kubectl apply -f
-    https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ cilium_gateway_api_crds_version }}/standard-install.yaml
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  register: gateway_api_crds_result
-  changed_when: "'configured' in gateway_api_crds_result.stdout or 'created' in gateway_api_crds_result.stdout"
+  vars:
+    gateway_api_crds_url: "https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ cilium_gateway_api_crds_version }}/standard-install.yaml"
+    gateway_api_ssa_flags: >-
+      --server-side --force-conflicts
+      --field-manager={{ cilium_gateway_api_crds_field_manager }}
   when:
     - cilium_enable_gateway_api | bool
     - inventory_hostname in groups['initial_master_node']
+  block:
+    - name: Diff Gateway API CRDs against the cluster
+      ansible.builtin.command: >
+        kubectl diff {{ gateway_api_ssa_flags }} -f {{ gateway_api_crds_url }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      register: gateway_api_crds_diff
+      failed_when: false
+      changed_when: false
+
+    - name: Apply Gateway API CRDs (server-side)
+      ansible.builtin.command: >
+        kubectl apply {{ gateway_api_ssa_flags }} -f {{ gateway_api_crds_url }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      register: gateway_api_crds_result
+      changed_when: true
+      when: gateway_api_crds_diff.rc != 0
 
 - name: Create cilium config
   ansible.builtin.template:
@@ -74,10 +97,13 @@
     dest: "{{ config_dir }}/{{ cilium_config }}"
   tags: cilium_config
 
-# Detect an existing install by its Helm release, not by `cilium status`: status
-# also exits non-zero when Cilium IS installed but degraded (pod not ready,
-# operator restarting), and a re-run then called `cilium install` again, which
-# fails on the existing release instead of repairing it via `cilium upgrade`.
+# Detect an existing install by its Helm release (cilium-cli installs release
+# "cilium" in kube-system on k3s and on RKE2 with rke2_cni: none), not by
+# `cilium status` rc. Status is a health probe: it exits 1 both when Cilium is
+# absent and when the API is unreachable (failed_when: false then picked the
+# install branch, and `cilium install` on an existing release fails with "cannot
+# reuse a name that is still in use"). This check is exact, and if the API is
+# unreachable it fails the task instead of choosing a branch.
 - name: Check if cilium is already installed
   ansible.builtin.command: >
     kubectl -n kube-system get secret
