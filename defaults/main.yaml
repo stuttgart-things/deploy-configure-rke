@@ -290,10 +290,16 @@ root_cert_subject: "/CN=stuttgart-things"
 root_ca: "{{ root_cert_dir }}/root-ca.pem"
 root_ca_key: "{{ root_cert_dir }}/root-ca-key.pem"
 # conatinerd
+# Only used with install_containerd: true (k3s and rke2 ship their own
+# containerd). containerd 2.3 is the LTS line (support until 2028-04-30); 1.7
+# reached end of life on 2026-09-30. The config edits below target the 2.x
+# default config (`containerd config default`, config version 3/4): the CNI
+# binary path is `bin_dirs` (a list) since containerd 2.1, so pinning a
+# containerd older than 2.1 needs regexBinDir/replaceBinDir overridden.
 install_containerd: false
-containerd_version: 1.7.1
-runc_version: 1.1.7
-cni_version: 1.3.0
+containerd_version: 2.3.6
+runc_version: 1.5.2
+cni_version: 1.9.1
 conatinerd_import_rke2images: false
 containerd_cli: /usr/local/bin/ctr
 containerd_importer_script: containerd-import-images.sh
@@ -309,8 +315,11 @@ runc_bin_dest: /usr/local/sbin/
 cni_install_url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz"
 cni_install_dest: /opt/cni/bin
 rke2_config_file: config.yaml
-regexBinDir: '^(\s*)bin_dir =.*'
-replaceBinDir: '\1bin_dir = "/var/lib/rancher/rke2/bin/"'
+# `bin_dirs`, not `bin_dir`: in the 2.x default config `bin_dir` is the deprecated
+# (empty) CNI key AND the image-verifier plugin's path, so a `bin_dir` regex
+# would rewrite the wrong line and leave `bin_dirs` at /opt/cni/bin.
+regexBinDir: '^(\s*)bin_dirs =.*'
+replaceBinDir: "\\1bin_dirs = ['/var/lib/rancher/rke2/bin/']"
 regexConfDir: '^(\s*)conf_dir =.*'
 replaceConfDir: '\1conf_dir = "/etc/cni/net.d"'
 regexRootPath: '^root ='
