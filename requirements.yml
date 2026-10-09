@@ -8,7 +8,7 @@ roles:
     version: main
   - src: https://github.com/stuttgart-things/install-requirements.git
     scm: git
-    version: 2026.09.17
+    version: 2026.10.09
   - src: https://github.com/stuttgart-things/download-install-binary.git
     scm: git
     version: 2026.10.01
