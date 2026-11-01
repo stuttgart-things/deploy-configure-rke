@@ -63,6 +63,27 @@ rke2_server_service_dir: /usr/local/lib/systemd/system
 rke2_server_service_env_config: rke2-server.env
 rke2_configure_proxy: false
 
+# kube-apiserver extras (server nodes only; empty = config.yaml as before).
+# Extra --flags, without the leading dashes, e.g. ["audit-log-maxage=30"].
+rke2_kube_apiserver_args: []
+# Extra host paths for the apiserver static pod, "<host>:<container>[:ro]".
+rke2_kube_apiserver_extra_mounts: []
+# Structured authentication (AuthenticationConfiguration): the object below
+# apiVersion/kind, e.g. {jwt: [...]}. Non-empty: written to
+# rke2_authentication_config_dir on every server node, mounted read-only into
+# the apiserver and passed as --authentication-config. See README.
+rke2_authentication_config: {}
+# v1 since Kubernetes 1.34; v1beta1 for 1.30-1.33.
+rke2_authentication_config_api_version: apiserver.config.k8s.io/v1
+rke2_authentication_config_dir: "{{ rke2_config_dir }}/authn"
+rke2_authentication_config_file: authentication-config.yaml
+# true: a changed config.yaml or authentication config restarts rke2-server
+# through the handler, one server at a time, waiting for its apiserver. Meant
+# for in-place changes with restart_rke2_already_running: false (README).
+rke2_restart_on_config_change: false
+rke2_restart_ready_retries: 30
+rke2_restart_ready_delay: 10
+
 install_helm_diff: true
 fetch_kubeconfig_local: true
 rke2_kubeconfig_path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"

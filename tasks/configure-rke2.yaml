@@ -8,10 +8,35 @@
     mode: 0755
   tags: rke2_config
 
+# Before config.yaml: the apiserver must find the file it is pointed at.
+- name: Create kube-apiserver authentication config
+  block:
+    - name: Create authentication config dir
+      ansible.builtin.file:
+        path: "{{ rke2_authentication_config_dir }}"
+        state: directory
+        owner: "{{ rke2_user_name }}"
+        group: "{{ rke2_user_group }}"
+        mode: 0700
+
+    - name: Create authentication config
+      ansible.builtin.template:
+        src: rke2-authentication-config.yaml.j2
+        dest: "{{ rke2_authentication_config_dir }}/{{ rke2_authentication_config_file }}"
+        owner: "{{ rke2_user_name }}"
+        group: "{{ rke2_user_group }}"
+        mode: 0600
+      notify: Restart rke2-server
+  when:
+    - rke2_authentication_config | length > 0
+    - inventory_hostname not in groups['workers']
+  tags: rke2_config
+
 - name: Create rke2 config
   ansible.builtin.template:
     src: "{{ rke2_config }}"
     dest: "{{ rke2_config_dir }}/config.yaml"
+  notify: Restart rke2-server
   tags: rke2_config
 
 - name: Add proxy details in rke2-server service

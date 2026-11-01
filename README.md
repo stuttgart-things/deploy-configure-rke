@@ -554,6 +554,83 @@ operator and envoy roll out again.
 
 </details>
 
+<details><summary>RKE2 KUBE-APISERVER: EXTRA ARGS, MOUNTS, OIDC (STRUCTURED AUTHENTICATION)</summary>
+
+Server nodes only (not `workers`), rke2 only. All empty by default: the
+rendered `config.yaml` stays as it was.
+
+```yaml
+# extra flags, without the leading dashes -> kube-apiserver-arg
+rke2_kube_apiserver_args:
+  - audit-log-maxage=30
+# extra host paths -> kube-apiserver-extra-mount ("<host>:<container>[:ro]")
+rke2_kube_apiserver_extra_mounts:
+  - /etc/rancher/rke2/audit:/etc/rancher/rke2/audit:ro
+```
+
+`rke2_authentication_config` writes an `AuthenticationConfiguration` (the
+object below `apiVersion`/`kind`) to
+`/etc/rancher/rke2/authn/authentication-config.yaml` on every server node
+(mode 0600), mounts the directory read-only into the apiserver and adds
+`--authentication-config`. Example: OIDC logins from ZITADEL, the project roles
+as groups:
+
+```yaml
+rke2_authentication_config:
+  jwt:
+    - issuer:
+        url: https://zitadel.example.com            # exactly as in the discovery document
+        audiences:
+          - "<client id>"                           # the ID token's aud
+        certificateAuthority: |                     # optional: CA of a private issuer
+          -----BEGIN CERTIFICATE-----
+          ...
+          -----END CERTIFICATE-----
+      claimMappings:
+        username:
+          claim: email                              # email_verified must not be false
+          prefix: "zitadel:"
+        groups:
+          # keys of the roles claim; with expression, the prefix goes into it
+          expression: '"urn:zitadel:iam:org:project:roles" in claims ? claims["urn:zitadel:iam:org:project:roles"].map(r, "zitadel:" + r) : []'
+```
+
+- `rke2_authentication_config_api_version`: `apiserver.config.k8s.io/v1`
+  (Kubernetes >= 1.34); `v1beta1` for 1.30 - 1.33.
+- `--authentication-config` replaces the `--oidc-*` flags; do not set both.
+  Client certificates and ServiceAccount tokens keep working, so an IdP that
+  is down only breaks the OIDC logins.
+- The apiserver reloads the file when its content changes. Adding or removing
+  the flag or the mount needs an rke2-server restart.
+- Nothing is authorized by this: bind the mapped users / groups with RBAC
+  (e.g. a ClusterRoleBinding for group `zitadel:<role>`).
+
+**Restart.** A normal run restarts rke2-server on every node anyway
+(`restart_rke2_already_running: true`). For an in-place change, let the
+handler do it instead -- one server at a time, the next only once this one's
+apiserver answers `/readyz`, and the run stops at the first node that does not
+come back:
+
+```bash
+ansible-playbook -i inventory play.yaml \
+  -e restart_rke2_already_running=false \
+  -e rke2_restart_on_config_change=true
+```
+
+The handler fires on a changed `config.yaml` or authentication config only
+(`rke2_restart_ready_retries` x `rke2_restart_ready_delay`, default 30 x 10s).
+
+Check on a server node:
+
+```bash
+grep -A3 kube-apiserver-arg /etc/rancher/rke2/config.yaml
+/var/lib/rancher/rke2/bin/crictl -r /run/k3s/containerd/containerd.sock ps --name kube-apiserver
+# with an ID token of the issuer:
+kubectl --token "$ID_TOKEN" auth whoami
+```
+
+</details>
+
 <details><summary>EXAMPLE K3S PLAYBOOK w/ ADDONS</summary>
 
 ```bash

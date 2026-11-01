@@ -30,3 +30,23 @@ disable-apiserver: true
 disable-controller-manager: true
 disable-scheduler: true
 {% endif %}
+{% if inventory_hostname not in groups['workers'] %}
+{% set _apiserver_args = rke2_kube_apiserver_args | list %}
+{% set _apiserver_mounts = rke2_kube_apiserver_extra_mounts | list %}
+{% if rke2_authentication_config | length > 0 %}
+{% set _apiserver_args = _apiserver_args + ['authentication-config=' ~ rke2_authentication_config_dir ~ '/' ~ rke2_authentication_config_file] %}
+{% set _apiserver_mounts = _apiserver_mounts + [rke2_authentication_config_dir ~ ':' ~ rke2_authentication_config_dir ~ ':ro'] %}
+{% endif %}
+{% if _apiserver_args | length > 0 %}
+kube-apiserver-arg:
+{% for arg in _apiserver_args %}
+  - {{ arg | to_json }}
+{% endfor %}
+{% endif %}
+{% if _apiserver_mounts | length > 0 %}
+kube-apiserver-extra-mount:
+{% for mount in _apiserver_mounts %}
+  - {{ mount | to_json }}
+{% endfor %}
+{% endif %}
+{% endif %}

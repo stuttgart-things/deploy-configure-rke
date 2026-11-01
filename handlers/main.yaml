@@ -2,3 +2,29 @@
 - name: Update OS trust store (k3s root CA)
   ansible.builtin.command: "{{ 'update-ca-trust extract' if ansible_facts['os_family'] == 'RedHat' else 'update-ca-certificates' }}"
   changed_when: true
+
+# Only with rke2_restart_on_config_change: true (otherwise the start step's
+# restart_rke2_already_running restart applies, as before). One server at a
+# time, and the next one only once this one's apiserver answers /readyz --
+# a broken flag or authentication config stops the run on the first node
+# instead of taking every control plane down.
+- name: Restart rke2-server
+  ansible.builtin.shell: |
+    set -o pipefail
+    systemctl restart {{ rke2_server_service }}
+    for i in $(seq {{ rke2_restart_ready_retries }}); do
+      if {{ rke2_bin_dir }}/kubectl --kubeconfig {{ rke_dir }}/server/cred/admin.kubeconfig get --raw=/readyz >/dev/null 2>&1; then
+        exit 0
+      fi
+      sleep {{ rke2_restart_ready_delay }}
+    done
+    echo "kube-apiserver on {{ inventory_hostname }} not ready after restart" >&2
+    exit 1
+  args:
+    executable: /bin/bash
+  throttle: 1
+  any_errors_fatal: true
+  when:
+    - rke2_restart_on_config_change | bool
+    - not install_k3s | bool
+    - inventory_hostname not in groups['workers']
