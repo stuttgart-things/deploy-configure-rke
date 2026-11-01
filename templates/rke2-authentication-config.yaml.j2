@@ -1,0 +1,7 @@
+---
+# {{ ansible_managed }}
+# kube-apiserver --authentication-config. The apiserver reloads this file when
+# it changes; the flag and the mount need an rke2-server restart.
+apiVersion: {{ rke2_authentication_config_api_version }}
+kind: AuthenticationConfiguration
+{{ rke2_authentication_config | to_nice_yaml(indent=2, width=4096) }}

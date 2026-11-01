@@ -1,0 +1,40 @@
+---
+# In-place change of the kube-apiserver authentication on an existing rke2
+# cluster (README: RKE2 KUBE-APISERVER). Run with the cluster's own vars:
+#
+#   ansible-playbook -i inv.yaml tests/rke2-apiserver-authn.yaml
+#
+# restart_rke2_already_running: false + rke2_restart_on_config_change: true
+# -> the handler restarts rke2-server one server at a time.
+- name: Converge
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    rke_state: present
+    rke_version: 2
+    rke2_k8s_version: 1.35.1
+    rke2_release_kind: rke2r1
+    cluster_setup: multinode
+    rke2_cni: none
+    install_cilium: true
+    disableKubeProxy: true
+    restart_rke2_already_running: false
+    rke2_restart_on_config_change: true
+
+    rke2_authentication_config:
+      jwt:
+        - issuer:
+            url: https://zitadel.example.com
+            audiences:
+              - "<client id>"
+          claimMappings:
+            username:
+              claim: email
+              prefix: "zitadel:"
+            groups:
+              expression: '"urn:zitadel:iam:org:project:roles" in claims ? claims["urn:zitadel:iam:org:project:roles"].map(r, "zitadel:" + r) : []'
+
+  roles:
+    - role: deploy-configure-rke
