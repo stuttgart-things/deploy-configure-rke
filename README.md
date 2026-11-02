@@ -520,6 +520,32 @@ k3s config file does trigger the install script, and with it a k3s restart.
 
 </details>
 
+<details><summary>KUBECONFIG SERVER AND CILIUM k8sServiceHost: FQDN, NOT THE BUILD-TIME IP</summary>
+
+A DHCP-built node can come back from a reboot with another IP. Everything pinned
+to the old one then breaks (stuttgart-things/stuttgart-things#4211). Its DNS
+name follows the lease.
+
+- **kubeconfig `server:`** (the node's file, the fetched one, and what gets
+  published from it): the initial master's `ansible_fqdn`, once a probe from that
+  node shows it resolves and the API presents a certificate for it, signed by
+  the cluster CA (`api_server_ca_path`). Otherwise the IP, as before. The run
+  says which one it took, and why.
+- **Cilium `k8sServiceHost`**: `127.0.0.1` with `cluster_setup: singlenode`.
+  Agent and operator run in the host network, so nothing is tied to a lease. With
+  more nodes, the kubeconfig host. A re-run on an existing cluster moves it over
+  through `cilium upgrade`.
+
+```yaml
+kubeconfig_server_host: api.my-cluster.example.com  # skip the probe, use this name
+cilium_api_server_ip: 10.31.103.22                  # override Cilium's host
+```
+
+Not covered: etcd and the join URL of further nodes still use the IP. A
+control-plane VM built from DHCP still wants a reservation.
+
+</details>
+
 <details><summary>CILIUM GATEWAY API: ALPN FOR gRPC</summary>
 
 With `cilium_enable_gateway_api: true` the role also renders
