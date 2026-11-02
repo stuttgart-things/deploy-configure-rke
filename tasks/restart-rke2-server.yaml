@@ -1,0 +1,29 @@
+---
+# One server of the "Restart rke2-server" handler (handlers/main.yaml).
+# rke2-server is Type=notify and only turns active again once its apiserver
+# is up -- with a broken kube-apiserver flag it stays "activating" forever
+# (TimeoutStartSec=0), so a blocking `systemctl restart` would hang the run.
+# Restart without blocking, then wait for a new activation of the unit and
+# /readyz; fail after rke2_restart_ready_retries x rke2_restart_ready_delay.
+- name: "Restart rke2-server on {{ _rke2_restart_host }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    unit={{ rke2_server_service }}
+    before=$(systemctl show -p ActiveEnterTimestampMonotonic --value "$unit")
+    systemctl restart --no-block "$unit"
+    for i in $(seq {{ rke2_restart_ready_retries }}); do
+      sleep {{ rke2_restart_ready_delay }}
+      now=$(systemctl show -p ActiveEnterTimestampMonotonic --value "$unit")
+      if [ "$(systemctl is-active "$unit")" = active ] && [ "$now" != "$before" ] &&
+         {{ rke2_bin_dir }}/kubectl --kubeconfig {{ rke_dir }}/server/cred/admin.kubeconfig get --raw=/readyz >/dev/null 2>&1; then
+        exit 0
+      fi
+    done
+    echo "rke2-server on {{ _rke2_restart_host }} not back after restart ($(systemctl is-active "$unit"))" >&2
+    exit 1
+  args:
+    executable: /bin/bash
+  delegate_to: "{{ _rke2_restart_host }}"
+  changed_when: true
+  # end the play for every host, not just the one walking the loop
+  any_errors_fatal: true

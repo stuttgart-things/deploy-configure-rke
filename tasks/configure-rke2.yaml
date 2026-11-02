@@ -26,6 +26,7 @@
         owner: "{{ rke2_user_name }}"
         group: "{{ rke2_user_group }}"
         mode: 0600
+      register: _rke2_authn_config_result
       notify: Restart rke2-server
   when:
     - rke2_authentication_config | length > 0
@@ -36,7 +37,16 @@
   ansible.builtin.template:
     src: "{{ rke2_config }}"
     dest: "{{ rke2_config_dir }}/config.yaml"
+  register: _rke2_config_result
   notify: Restart rke2-server
+  tags: rke2_config
+
+# Which hosts the "Restart rke2-server" handler walks (it runs once and
+# delegates, so the notify alone does not tell it).
+- name: Remember a pending rke2-server restart
+  ansible.builtin.set_fact:
+    _rke2_restart_pending: true
+  when: (_rke2_authn_config_result is changed) or (_rke2_config_result is changed)
   tags: rke2_config
 
 - name: Add proxy details in rke2-server service
