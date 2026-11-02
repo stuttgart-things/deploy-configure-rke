@@ -1,0 +1,56 @@
+---
+# Which host the exported kubeconfig names (stuttgart-things/stuttgart-things#4211).
+# A DHCP-built node can come back from a reboot with another IP; everything
+# pinned to the build-time IP then breaks, while its DNS name follows the lease.
+# So the FQDN wins, but only once it is proven from the node itself: it resolves,
+# and the API server presents a certificate for it signed by the cluster CA.
+# Anything else keeps the IP, the old behaviour. kubeconfig_server_host skips
+# the probe. Runs on the initial master; the others read its fact.
+- name: Wait for the API server to listen
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ k8s_api_port | int }}"
+    timeout: "{{ api_server_wait_timeout | int }}"
+  # Not a new failure point: an API that never comes up keeps the IP below,
+  # and the readiness test after it fails the run as before.
+  failed_when: false
+  when: kubeconfig_server_host | default('', true) | length == 0
+
+# Any HTTP answer proves DNS and TLS; 401/403 only mean anonymous auth is off.
+- name: Probe the API server under the node's FQDN
+  ansible.builtin.uri:
+    url: "https://{{ ansible_fqdn }}:{{ k8s_api_port }}/version"
+    ca_path: "{{ api_server_ca_path }}"
+    validate_certs: true
+    status_code: [200, 401, 403]
+  register: _api_fqdn_probe
+  until: (_api_fqdn_probe.status | default(-1)) in [200, 401, 403]
+  retries: 6
+  delay: 5
+  failed_when: false
+  when:
+    - kubeconfig_server_host | default('', true) | length == 0
+    - "'.' in ansible_fqdn"
+
+- name: Name the API server host for the kubeconfig
+  ansible.builtin.set_fact:
+    rke_api_server_host: >-
+      {{ kubeconfig_server_host
+         if kubeconfig_server_host | default('', true) | length > 0
+         else ansible_fqdn
+         if (_api_fqdn_probe.status | default(-1)) in [200, 401, 403]
+         else ansible_default_ipv4.address }}
+
+- name: Report the API server host
+  ansible.builtin.debug:
+    msg: "kubeconfig server: https://{{ rke_api_server_host }}:{{ k8s_api_port }}"
+
+- name: Report why the kubeconfig keeps the IP
+  ansible.builtin.debug:
+    msg: >-
+      The FQDN '{{ ansible_fqdn }}' did not pass the probe
+      ({{ _api_fqdn_probe.msg | default('no domain part') }}), so the kubeconfig
+      keeps the build-time IP. Reserve it in DHCP or set kubeconfig_server_host.
+  when:
+    - kubeconfig_server_host | default('', true) | length == 0
+    - rke_api_server_host == ansible_default_ipv4.address

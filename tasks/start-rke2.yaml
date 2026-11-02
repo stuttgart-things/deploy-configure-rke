@@ -23,11 +23,15 @@
   ignore_errors: "{{ rke2_task_can_possibly_fail }}"
   when: restart_rke2_already_running|bool
 
-- name: Add external ip to kubeconfig
+- name: Name the API server host for the kubeconfig
+  ansible.builtin.include_tasks: resolve-api-server-host.yaml
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Add the API server host to kubeconfig
   ansible.builtin.lineinfile:
     path: "{{ rke2_config_dir }}/{{ rke2_kubeconfig_name }}"
     regexp: "127.0.0.1:{{ k8s_api_port }}"
-    line: "    server: https://{% for host in groups['initial_master_node'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% endfor %}:{{ k8s_api_port }}"
+    line: "    server: https://{% for host in groups['initial_master_node'] %}{{ hostvars[host]['rke_api_server_host'] | default(hostvars[host]['ansible_default_ipv4']['address']) }}{% endfor %}:{{ k8s_api_port }}"
 
 - name: Install cilium
   ansible.builtin.include_tasks: install-cilium.yaml

@@ -238,7 +238,22 @@ k3s_config:
     - servicelb
     - traefik
 
-cilium_api_server_ip: "{{ ansible_default_ipv4.address }}"
+# Host the exported kubeconfig's `server:` names. Empty (default): the initial
+# master's FQDN once it resolves on that node and the API certificate carries it,
+# else its IP as before (tasks/resolve-api-server-host.yaml, #4211 in
+# stuttgart-things/stuttgart-things). The name follows a DHCP lease, the IP does
+# not. etcd still binds the IP, so a control-plane VM wants a DHCP reservation.
+kubeconfig_server_host: ""
+api_server_ca_path: "/var/lib/rancher/{{ 'k3s' if install_k3s | bool else 'rke2' }}/server/tls/server-ca.crt"
+# Same budget as the readiness test in start-rke2.yaml.
+api_server_wait_timeout: "{{ (rke2_ready_retries | int) * (rke2_ready_delay | int) }}"
+# Cilium's k8sServiceHost (kube-proxy is replaced, so it cannot use the
+# `kubernetes` Service). Single node: 127.0.0.1 -- agent and operator run in the
+# host network, and nothing is tied to a lease. Otherwise the kubeconfig host.
+cilium_api_server_ip: >-
+  {{ '127.0.0.1' if cluster_setup == 'singlenode'
+     else hostvars[groups['initial_master_node'][0]]['rke_api_server_host']
+     | default(hostvars[groups['initial_master_node'][0]]['ansible_default_ipv4']['address']) }}
 cilium_api_server_port: 6443
 cilium_kube_proxy_replacement: true
 cilium_operator_replicas: 1
