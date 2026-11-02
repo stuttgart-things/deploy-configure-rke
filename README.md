@@ -618,7 +618,7 @@ rke2_authentication_config:
           prefix: "zitadel:"
         groups:
           # keys of the roles claim; with expression, the prefix goes into it
-          expression: '"urn:zitadel:iam:org:project:roles" in claims ? dyn(claims["urn:zitadel:iam:org:project:roles"]).map(r, "zitadel:" + r) : []'
+          expression: 'dyn(claims[?"urn:zitadel:iam:org:project:roles"].orValue({})).map(r, "zitadel:" + r)'
 ```
 
 - `rke2_authentication_config_api_version`: `apiserver.config.k8s.io/v1`
@@ -646,7 +646,13 @@ timeout 10 ./kube-apiserver --authentication-config=authn.yaml --etcd-servers=ht
 ```
 
 Claim values are typed `any` in CEL: wrap a claim in `dyn()` before `.map()`
-or other macros over it.
+or other macros over it. The binary only catches compile errors: `"<claim>"
+in claims` compiles but fails at every login (`no such overload`, `claims` is
+a lazy map), and `has()` takes no claim name with colons -- use
+`claims[?"<claim>"].orValue(<default>)`. Runtime errors show up in the
+apiserver log as `error evaluating ... claim expression`. A change of the
+authentication config alone needs no restart: the apiserver reloads the file
+(`reloaded authentication config`) and keeps the old one if it rejects it.
 
 **Restart.** A normal run restarts rke2-server on every node at the same time
 (`restart_rke2_already_running: true`) -- with a broken config that is every
