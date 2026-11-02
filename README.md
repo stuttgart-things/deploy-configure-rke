@@ -618,7 +618,7 @@ rke2_authentication_config:
           prefix: "zitadel:"
         groups:
           # keys of the roles claim; with expression, the prefix goes into it
-          expression: '"urn:zitadel:iam:org:project:roles" in claims ? claims["urn:zitadel:iam:org:project:roles"].map(r, "zitadel:" + r) : []'
+          expression: '"urn:zitadel:iam:org:project:roles" in claims ? dyn(claims["urn:zitadel:iam:org:project:roles"]).map(r, "zitadel:" + r) : []'
 ```
 
 - `rke2_authentication_config_api_version`: `apiserver.config.k8s.io/v1`
@@ -631,11 +631,29 @@ rke2_authentication_config:
 - Nothing is authorized by this: bind the mapped users / groups with RBAC
   (e.g. a ClusterRoleBinding for group `zitadel:<role>`).
 
-**Restart.** A normal run restarts rke2-server on every node anyway
-(`restart_rke2_already_running: true`). For an in-place change, let the
-handler do it instead -- one server at a time, the next only once this one's
-apiserver answers `/readyz`, and the run stops at the first node that does not
-come back:
+**Validate first.** kube-apiserver refuses to start on an invalid
+authentication config (e.g. a CEL expression that does not compile), and the
+same file goes to every server. Check it with the kube-apiserver binary of the
+cluster version before the run -- it fails within a second on a bad config and
+otherwise only waits for etcd:
+
+```bash
+curl -sfLO https://dl.k8s.io/v1.35.1/bin/linux/amd64/kube-apiserver && chmod +x kube-apiserver
+openssl req -x509 -newkey rsa:2048 -nodes -keyout k.pem -out c.pem -subj /CN=t 2>/dev/null
+timeout 10 ./kube-apiserver --authentication-config=authn.yaml --etcd-servers=http://127.0.0.1:1 \
+  --service-account-issuer=x --service-account-key-file=c.pem \
+  --service-account-signing-key-file=k.pem --cert-dir=. 2>&1 | grep -i "invalid authentication"
+```
+
+Claim values are typed `any` in CEL: wrap a claim in `dyn()` before `.map()`
+or other macros over it.
+
+**Restart.** A normal run restarts rke2-server on every node at the same time
+(`restart_rke2_already_running: true`) -- with a broken config that is every
+apiserver down. For an in-place change, let the handler do it instead -- one
+server at a time, the next only once this one is back (rke2-server active
+again and `/readyz`), and the run stops at the first node that does not come
+back:
 
 ```bash
 ansible-playbook -i inventory play.yaml \
@@ -643,8 +661,11 @@ ansible-playbook -i inventory play.yaml \
   -e rke2_restart_on_config_change=true
 ```
 
-The handler fires on a changed `config.yaml` or authentication config only
-(`rke2_restart_ready_retries` x `rke2_restart_ready_delay`, default 30 x 10s).
+The handler restarts only servers whose `config.yaml` or authentication config
+changed (`rke2_restart_ready_retries` x `rke2_restart_ready_delay`, default
+30 x 10s per server). If one does not come back, its config is in place but
+the remaining servers are untouched: fix or revert the file there and restart
+rke2-server on that node.
 
 Check on a server node:
 
