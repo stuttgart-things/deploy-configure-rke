@@ -34,7 +34,7 @@
               claim: email
               prefix: "zitadel:"
             groups:
-              expression: '"urn:zitadel:iam:org:project:roles" in claims ? dyn(claims["urn:zitadel:iam:org:project:roles"]).map(r, "zitadel:" + r) : []'
+              expression: 'dyn(claims[?"urn:zitadel:iam:org:project:roles"].orValue({})).map(r, "zitadel:" + r)'
 
   roles:
     - role: deploy-configure-rke
