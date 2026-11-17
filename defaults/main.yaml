@@ -248,10 +248,14 @@ api_server_ca_path: "/var/lib/rancher/{{ 'k3s' if install_k3s | bool else 'rke2'
 # Same budget as the readiness test in start-rke2.yaml.
 api_server_wait_timeout: "{{ (rke2_ready_retries | int) * (rke2_ready_delay | int) }}"
 # Cilium's k8sServiceHost (kube-proxy is replaced, so it cannot use the
-# `kubernetes` Service). Single node: 127.0.0.1 -- agent and operator run in the
-# host network, and nothing is tied to a lease. Otherwise the kubeconfig host.
+# `kubernetes` Service). Agent and operator run in the host network, so
+# 127.0.0.1 reaches the node's own apiserver on a server and rke2's client
+# load balancer (127.0.0.1:6443, all servers) on an agent: a reboot only
+# takes the rebooting node's apiserver away (#52). RKE2 single and multinode,
+# k3s single node. k3s multinode keeps the initial master's kubeconfig host:
+# its agents' load balancer listens on 6444, and the value is cluster-wide.
 cilium_api_server_ip: >-
-  {{ '127.0.0.1' if cluster_setup == 'singlenode'
+  {{ '127.0.0.1' if cluster_setup == 'singlenode' or not install_k3s | bool
      else hostvars[groups['initial_master_node'][0]]['rke_api_server_host']
      | default(hostvars[groups['initial_master_node'][0]]['ansible_default_ipv4']['address']) }}
 cilium_api_server_port: 6443
