@@ -531,10 +531,15 @@ name follows the lease.
   node shows it resolves and the API presents a certificate for it, signed by
   the cluster CA (`api_server_ca_path`). Otherwise the IP, as before. The run
   says which one it took, and why.
-- **Cilium `k8sServiceHost`**: `127.0.0.1` with `cluster_setup: singlenode`.
-  Agent and operator run in the host network, so nothing is tied to a lease. With
-  more nodes, the kubeconfig host. A re-run on an existing cluster moves it over
-  through `cilium upgrade`.
+- **Cilium `k8sServiceHost`**: `127.0.0.1` on RKE2 (single and multinode) and
+  on a single k3s node. Agent and operator run in the host network: on a server
+  that is its own apiserver, on an RKE2 agent rke2's client load balancer on
+  `127.0.0.1:6443`. Nothing is tied to a lease or to one node, so a reboot of
+  the initial master no longer cuts every Cilium component off the API (#52;
+  that broke Gateway API TLS on a 3-server cluster,
+  stuttgart-things/stuttgart-things#4711). k3s multinode keeps the kubeconfig
+  host: k3s agents listen on `127.0.0.1:6444`, and the value is cluster-wide. A
+  re-run on an existing cluster moves it over through `cilium upgrade`.
 
 ```yaml
 kubeconfig_server_host: api.my-cluster.example.com  # skip the probe, use this name
