@@ -37,14 +37,36 @@
   ansible.builtin.include_tasks: start-rke2.yaml
   when: inventory_hostname in groups['additional_master_nodes'] or inventory_hostname in groups['workers'] and cluster_setup != 'singlenode'
 
-- name: Label worker nodes
-  ansible.builtin.shell: |
-    for node in $(kubectl --kubeconfig {{ rke2_kubeconfig_name }} get nodes --no-headers | awk '$3=="<none>" {print $1}'); do
-      kubectl --kubeconfig {{ rke2_kubeconfig_name }} label node $node node-role.kubernetes.io/worker=worker --overwrite
-    done
-  args:
-    chdir: "{{ rke2_config_dir }}"
-  when: inventory_hostname in groups['workers']
+# Label this worker by the name rke2 registers it under (the OS hostname,
+# lowercased; the role sets no node-name). The worker joins asynchronously
+# after its service starts, so wait for the node object first. kubectl runs on
+# the initial master, which holds the admin kubeconfig.
+- name: Label worker node
+  when: inventory_hostname in groups['workers'] and cluster_setup != 'singlenode'
+  block:
+    - name: Set worker node name
+      ansible.builtin.set_fact:
+        rke2_worker_node_name_resolved: "{{ (rke2_worker_node_name | default(ansible_nodename)) | lower }}"
+
+    - name: Wait for the worker node to register
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ rke2_kubeconfig_path }}
+        get node {{ rke2_worker_node_name_resolved }} -o name
+      register: rke2_worker_node
+      retries: "{{ rke2_ready_retries }}"
+      delay: "{{ rke2_ready_delay }}"
+      until: rke2_worker_node.rc == 0
+      changed_when: false
+      delegate_to: "{{ groups['initial_master_node'] | first }}"
+
+    - name: Label worker node with the worker role
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ rke2_kubeconfig_path }}
+        label node {{ rke2_worker_node_name_resolved }}
+        node-role.kubernetes.io/worker=worker --overwrite
+      register: rke2_worker_label
+      changed_when: "'not labeled' not in rke2_worker_label.stdout"
+      delegate_to: "{{ groups['initial_master_node'] | first }}"
 
 - name: Add alias for crictl to nodes
   lineinfile:

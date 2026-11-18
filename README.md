@@ -86,6 +86,14 @@ ansible-playbook sthings.deploy_rke.rke2 \
 
 </details>
 
+Hosts in `workers` join as rke2 servers without etcd/control plane. After a
+worker starts, the role waits (from the first `initial_master_node`, up to
+`rke2_ready_retries` x `rke2_ready_delay`) until the node is registered and
+then labels exactly that node `node-role.kubernetes.io/worker=worker`. The node
+name is the worker's OS hostname (`ansible_nodename`, lowercased); set
+`rke2_worker_node_name` per host if it registers under another name. On k3s
+the same applies to `additional_master_nodes` (`k3s_additional_nodes`).
+
 <details><summary>UNINSTALL</summary>
 
 ```bash
