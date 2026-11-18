@@ -37,6 +37,10 @@ rke2_user_group: root
 rke2_server_service: rke2-server.service
 rke2_ready_retries: 40
 rke2_ready_delay: 30
+# Node name a worker registers under, used to wait for it and label it with the
+# worker role (from the initial master). Defaults to the worker's OS hostname
+# (ansible_nodename, lowercased), which rke2 uses as no node-name is set.
+# rke2_worker_node_name: worker-1.example.com
 rke2_node_register_port: 9345
 k8s_api_port: 6443
 rke2_uninstall_script: /usr/local/bin/rke2-uninstall.sh
@@ -213,7 +217,9 @@ k3s_force_reinstall: false
 k3s_binary_path: /usr/local/bin/k3s
 k3s_server_unit_path: /etc/systemd/system/k3s.service
 k3s_master_ip: "{{ groups.initial_master_node | map('extract', hostvars, 'ansible_default_ipv4') | map(attribute='address') }}"
-k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_hostname') }}"
+# Node names the additional nodes register under (OS hostname, as k3s uses it);
+# each is waited for and labelled with the worker role.
+k3s_additional_nodes: "{{ groups.additional_master_nodes | map('extract', hostvars) | map(attribute='ansible_nodename') }}"
 k3s_uninstall_script: /usr/local/bin/k3s-uninstall.sh
 k3s_agent_uninstall_script: /usr/local/bin/k3s-agent-uninstall.sh
 k3s_config_template: k3s-config.yaml.j2

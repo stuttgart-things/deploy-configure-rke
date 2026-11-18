@@ -103,13 +103,27 @@
     INSTALL_K3S_SELINUX_WARN: "{{ 'true' if k3s_selinux_warn | bool else 'false' }}"
   when: inventory_hostname in groups['additional_master_nodes']
 
-- name: Label worker nodes
-  ansible.builtin.shell: |
-    kubectl label node {{ item }} node-role.kubernetes.io/worker=worker --overwrite
+# The additional nodes join asynchronously after their install script
+# returns, so wait for each node object before labelling it.
+- name: Wait for the additional nodes to register
+  ansible.builtin.command: kubectl get node {{ item | lower }} -o name
   environment:
     KUBECONFIG: "{{ k3s_kubeconfig_path }}"
-  with_items:
-    - "{{ k3s_additional_nodes }}"
+  register: k3s_additional_node
+  retries: "{{ rke2_ready_retries }}"
+  delay: "{{ rke2_ready_delay }}"
+  until: k3s_additional_node.rc == 0
+  changed_when: false
+  loop: "{{ k3s_additional_nodes }}"
+  when: inventory_hostname in groups['initial_master_node']
+
+- name: Label worker nodes
+  ansible.builtin.command: kubectl label node {{ item | lower }} node-role.kubernetes.io/worker=worker --overwrite
+  environment:
+    KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+  register: k3s_worker_label
+  changed_when: "'not labeled' not in k3s_worker_label.stdout"
+  loop: "{{ k3s_additional_nodes }}"
   when: inventory_hostname in groups['initial_master_node']
 
 - name: Configure k3s cluster
