@@ -11,6 +11,30 @@
 # Before config.yaml: the apiserver must find the file it is pointed at.
 - name: Create kube-apiserver authentication config
   block:
+    - name: Use either rke2_authentication_config or rke2_authentication_config_src
+      ansible.builtin.assert:
+        that:
+          - not (rke2_authentication_config | length > 0 and rke2_authentication_config_src | length > 0)
+        fail_msg: Set rke2_authentication_config OR rke2_authentication_config_src, not both.
+      run_once: true
+
+    # The config as the apiserver will read it, only to look at it (issuer
+    # check below). Never written back: the file goes out by copy.
+    - name: Read authentication config
+      ansible.builtin.set_fact:
+        _rke2_authn: >-
+          {{ (lookup('ansible.builtin.file', rke2_authentication_config_src) | from_yaml)
+             if rke2_authentication_config_src | length > 0
+             else rke2_authentication_config }}
+
+    - name: Check that the node reaches each JWT issuer
+      ansible.builtin.include_tasks: check-authn-issuer.yaml
+      loop: "{{ _rke2_authn.jwt | default([]) }}"
+      loop_control:
+        loop_var: _rke2_jwt
+        label: "{{ _rke2_jwt.issuer.url }}"
+      when: rke2_authentication_config_check_issuer | bool
+
     - name: Create authentication config dir
       ansible.builtin.file:
         path: "{{ rke2_authentication_config_dir }}"
@@ -26,10 +50,22 @@
         owner: "{{ rke2_user_name }}"
         group: "{{ rke2_user_group }}"
         mode: 0600
-      register: _rke2_authn_config_result
+      register: _rke2_authn_config_template
       notify: Restart rke2-server
+      when: rke2_authentication_config | length > 0
+
+    - name: Copy authentication config
+      ansible.builtin.copy:
+        src: "{{ rke2_authentication_config_src }}"
+        dest: "{{ rke2_authentication_config_dir }}/{{ rke2_authentication_config_file }}"
+        owner: "{{ rke2_user_name }}"
+        group: "{{ rke2_user_group }}"
+        mode: 0600
+      register: _rke2_authn_config_copy
+      notify: Restart rke2-server
+      when: rke2_authentication_config_src | length > 0
   when:
-    - rke2_authentication_config | length > 0
+    - (rke2_authentication_config | length > 0) or (rke2_authentication_config_src | length > 0)
     - inventory_hostname not in groups['workers']
   tags: rke2_config
 
@@ -46,7 +82,10 @@
 - name: Remember a pending rke2-server restart
   ansible.builtin.set_fact:
     _rke2_restart_pending: true
-  when: (_rke2_authn_config_result is changed) or (_rke2_config_result is changed)
+  when: >-
+    ((_rke2_authn_config_template | default({})) is changed)
+    or ((_rke2_authn_config_copy | default({})) is changed)
+    or (_rke2_config_result is changed)
   tags: rke2_config
 
 - name: Add proxy details in rke2-server service

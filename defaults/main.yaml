@@ -81,6 +81,19 @@ rke2_authentication_config: {}
 rke2_authentication_config_api_version: apiserver.config.k8s.io/v1
 rke2_authentication_config_dir: "{{ rke2_config_dir }}/authn"
 rke2_authentication_config_file: authentication-config.yaml
+# Alternative to rke2_authentication_config: path ON THE CONTROLLER to a
+# complete AuthenticationConfiguration file (apiVersion and kind included),
+# copied to the server nodes byte for byte -- no templating, so what was
+# validated in git is what the apiserver reads. Meant for builds that pass
+# vars as key=value strings (dagger blueprints), where the dict cannot go,
+# and to stay clear of ansible-core 2.18 templating a dict that holds Jinja
+# into a string (stuttgart-things#4878). Set one of the two, not both.
+rke2_authentication_config_src: ""
+# Before writing the authentication config: every server node fetches the
+# issuer's discovery document with the configured CA (certificateAuthority,
+# else the node's trust store) and checks its `issuer`. The apiserver starts
+# without it, but every OIDC login would fail. false skips the check.
+rke2_authentication_config_check_issuer: true
 # true: a changed config.yaml or authentication config restarts rke2-server
 # through the handler, one server at a time, waiting for its apiserver. Meant
 # for in-place changes with restart_rke2_already_running: false (README).

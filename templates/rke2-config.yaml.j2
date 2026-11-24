@@ -33,7 +33,7 @@ disable-scheduler: true
 {% if inventory_hostname not in groups['workers'] %}
 {% set _apiserver_args = rke2_kube_apiserver_args | list %}
 {% set _apiserver_mounts = rke2_kube_apiserver_extra_mounts | list %}
-{% if rke2_authentication_config | length > 0 %}
+{% if (rke2_authentication_config | length > 0) or (rke2_authentication_config_src | length > 0) %}
 {% set _apiserver_args = _apiserver_args + ['authentication-config=' ~ rke2_authentication_config_dir ~ '/' ~ rke2_authentication_config_file] %}
 {% set _apiserver_mounts = _apiserver_mounts + [rke2_authentication_config_dir ~ ':' ~ rke2_authentication_config_dir ~ ':ro'] %}
 {% endif %}

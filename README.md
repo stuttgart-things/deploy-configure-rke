@@ -634,6 +634,28 @@ rke2_authentication_config:
           expression: 'dyn(claims[?"urn:zitadel:iam:org:project:roles"].orValue({})).map(r, "zitadel:" + r)'
 ```
 
+**From a file instead of a dict:** `rke2_authentication_config_src` is the
+path, on the controller, of a complete `AuthenticationConfiguration`
+(`apiVersion` and `kind` included). It is copied to the server nodes byte for
+byte, with no templating, so the file you validated is the file the apiserver
+reads. Use it where vars arrive as `key=value` strings (dagger blueprints'
+`ansibleParameters`) and wherever the config would otherwise go through
+ansible-core 2.18's templating (a Jinja expression inside the dict turns the
+whole dict into a string there; stuttgart-things#4878). Set one of
+`rke2_authentication_config` / `rke2_authentication_config_src`, not both.
+
+```yaml
+rke2_authentication_config_src: /src/authentication-config.yaml
+```
+
+**Issuer check:** before the file is written, every server node fetches each
+JWT issuer's discovery document (`<url>/.well-known/openid-configuration`, or
+`discoveryURL`) with the issuer's `certificateAuthority` (else the node's trust
+store) and compares its `issuer` with `url`. If DNS, routing or the CA is
+wrong, the run fails there. Without the check the apiserver would start and
+every OIDC login would fail. `rke2_authentication_config_check_issuer: false`
+skips it.
+
 - `rke2_authentication_config_api_version`: `apiserver.config.k8s.io/v1`
   (Kubernetes >= 1.34); `v1beta1` for 1.30 - 1.33.
 - `--authentication-config` replaces the `--oidc-*` flags; do not set both.
