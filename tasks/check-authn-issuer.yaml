@@ -1,0 +1,39 @@
+---
+# One JWT issuer of the authentication config (loop var _rke2_jwt), from
+# configure-rke2.yaml. The apiserver fetches the discovery document and the
+# JWKS from the node itself (hostNetwork), with the issuer's
+# certificateAuthority if set. Check exactly that before the config goes
+# live: a node that cannot resolve or trust the issuer starts the apiserver
+# fine and then fails every OIDC login.
+- name: Write the issuer CA for the check
+  ansible.builtin.copy:
+    content: "{{ _rke2_jwt.issuer.certificateAuthority }}"
+    dest: /tmp/rke2-authn-issuer-ca.pem
+    mode: 0644
+  when: _rke2_jwt.issuer.certificateAuthority is defined
+  changed_when: false
+
+- name: Fetch the discovery document of {{ _rke2_jwt.issuer.url }}
+  ansible.builtin.uri:
+    url: "{{ _rke2_jwt.issuer.discoveryURL | default(_rke2_jwt.issuer.url ~ '/.well-known/openid-configuration') }}"
+    ca_path: "{{ '/tmp/rke2-authn-issuer-ca.pem' if _rke2_jwt.issuer.certificateAuthority is defined else omit }}"
+    return_content: true
+    timeout: 15
+  register: _rke2_issuer_discovery
+  retries: 3
+  delay: 10
+  until: _rke2_issuer_discovery is succeeded
+  ignore_errors: true
+
+- name: Fail unless the node reaches and trusts the issuer
+  ansible.builtin.assert:
+    that:
+      - _rke2_issuer_discovery is succeeded
+      - _rke2_issuer_discovery.json.issuer | default('') == _rke2_jwt.issuer.url
+    fail_msg: >-
+      {{ inventory_hostname }} cannot use issuer {{ _rke2_jwt.issuer.url }}:
+      {{ _rke2_issuer_discovery.msg | default('') }}
+      (discovery issuer: {{ _rke2_issuer_discovery.json.issuer | default('none') }}).
+      Fix DNS / CA on the node, or set rke2_authentication_config_check_issuer: false
+      to write the config anyway (OIDC logins then fail until it is fixed).
+    quiet: true
